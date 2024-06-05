@@ -1,17 +1,37 @@
 #!/bin/bash
-set -e
+banner() {
+  echo -e "\n=== $* ==="
+}
 
-echo "Prettiering..."
-npx prettier src --write
+runQuiet() {
+  TMP_FILENAME=/tmp/runQuiet.out
+  rm -f $TMP_FILENAME
+  $* > $TMP_FILENAME 2>&1
+
+  if [ $? -ne 0 ]; then
+    cat $TMP_FILENAME
+    rm -f $TMP_FILENAME
+    exit 1
+  else
+    rm -f $TMP_FILENAME
+  fi
+}
+
+banner "Prettiering..."
+runQuiet npx prettier src --write 2>&1 > temp.out
+
+banner "Testing..."
+runQuiet npx ts-node node_modules/jasmine/bin/jasmine $(find src -name '*.spec.ts')
 
 mkdir -p dist
 cd dist
 
-echo "Compiling typescript..."
-npx tsc --pretty --declaration --declarationMap --sourceMap --outDir src ../src/index.ts
+banner "Compiling typescript..."
+runQuiet npx tsc --pretty --declaration --declarationMap --sourceMap --outDir src ../src/index.ts
 
-echo "Packaging..."
+banner "Packaging..."
 cp ../package.json .
 cp -R ../bin .
 rm -f *.tgz
-npm pack
+runQuiet npm pack
+ls -l *.tgz

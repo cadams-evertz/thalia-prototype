@@ -1,0 +1,10 @@
+{
+  "name": "test",
+  "version": "0.0.1",
+  "description": "",
+  "author": "Chris Adams",
+  "license": "ISC",
+  "devDependencies": {
+    "thalia": "https://github.com/cadams-evertz/thalia-prototype/releases/download/0.0.2/thalia-0.0.2.tgz"
+  }
+}

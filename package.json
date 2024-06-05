@@ -1,0 +1,13 @@
+{
+  "name": "thalia",
+  "version": "0.0.2",
+  "description": "TODO",
+  "main": "./src/index.js",
+  "author": "Chris Adams",
+  "license": "ISC",
+  "dependencies": {
+    "@swc/core": "1.5.7",
+    "ts-node": "10.9.2",
+    "typescript": "4.8.4"
+  }
+}

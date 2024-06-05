@@ -2,6 +2,7 @@ export * as crypto from './crypto';
 export * as deps from './deps';
 export * as env from './env';
 export * as fs from './fs';
+export * as if from './if';
 export * as git from './git';
 export * as log from './log';
 export * as npm from './npm';

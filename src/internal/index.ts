@@ -1,2 +1,2 @@
 export * from './functions';
-export * from './smartOperation';
+export * from './smart-operation';

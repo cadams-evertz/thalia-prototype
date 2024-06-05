@@ -1,50 +1,47 @@
 import * as fs from 'fs';
 
 import * as thalia_crypto from '../crypto';
+import * as thalia_if from '../if';
 import * as thalia_log from '../log';
 import * as thalia_fs_dir from './dir';
 import { Path as thalia_fs_Path, Pathlike as thalia_fs_Pathlike } from './Path';
 
-import { ensureArray, smartOperation, ArrayOrSingle, SmartOperationOptions } from '../internal';
+import { ensureArray, smartOperation, ArrayOrSingle } from '../internal';
 
 export function copy(
   srcFilename: thalia_fs_Pathlike,
   destFilename: thalia_fs_Pathlike,
-  options?: SmartOperationOptions<'newer'>,
+  options?: smartOperation.Options<{ source: thalia_fs_Path; destination: thalia_fs_Path }>,
 ): boolean {
+  options = { ...{ if: thalia_if.newer }, ...options };
+
   const srcFilePath = thalia_fs_Path.ensure(srcFilename);
   const destFilePath = thalia_fs_Path.ensure(destFilename);
 
-  return smartOperation(
-    () => isNewer(srcFilePath, destFilePath),
-    () => {
+  return smartOperation(options, { source: srcFilePath, destination: destFilePath }, () => {
       thalia_log.setOptionsWhile({ action: false }, () => {
         thalia_fs_dir.createForFile(destFilePath);
       });
       thalia_log.action(`Copying ${srcFilePath} to ${destFilePath}...`);
       fs.copyFileSync(srcFilePath.absolute(), destFilePath.absolute());
-    },
-    options,
-  );
+  });
 }
 
 export function delete_(
   potentialFilenames: ArrayOrSingle<thalia_fs_Pathlike>,
-  options?: SmartOperationOptions<'exists'>,
+  options?: smartOperation.Options<thalia_fs_Path>,
 ): boolean {
+  options = { ...{ if: thalia_if.exists }, ...options };
+
   const filePaths = thalia_fs_Path.ensureArray(potentialFilenames);
   let executed = false;
 
   for (const filePath of filePaths) {
     executed =
-      smartOperation(
-        () => filePath.exists(),
-        () => {
+      smartOperation(options, filePath, () => {
           thalia_log.action(`Deleting ${filePath}...`);
           fs.rmSync(filePath.absolute(), { force: true });
-        },
-        options,
-      ) || executed;
+      }) || executed;
   }
 
   return executed;
@@ -181,7 +178,10 @@ export interface MulticopyOperation {
   dest: thalia_fs_Pathlike;
 }
 
-export function multiCopy(operations: MulticopyOperation[], options?: SmartOperationOptions<'newer'>): boolean {
+export function multiCopy(
+  operations: MulticopyOperation[],
+  options?: smartOperation.Options<{ source: thalia_fs_Path; destination: thalia_fs_Path }>,
+): boolean {
   let executed = false;
 
   for (const operation of operations) {
@@ -255,21 +255,19 @@ export function readText(filename: thalia_fs_Pathlike): string {
 export function writeBinary(
   filename: thalia_fs_Pathlike,
   data: Uint8Array,
-  options?: SmartOperationOptions<'different'>,
+  options?: smartOperation.Options<{ path: thalia_fs_Path; data: Uint8Array }>,
 ): void {
+  options = { ...{ if: thalia_if.differentContentsBinary }, ...options };
+
   const filePath = thalia_fs_Path.ensure(filename);
 
-  smartOperation(
-    () => hasDifferentContentsBinary(filePath, data),
-    () => {
+  smartOperation(options, { path: filePath, data }, () => {
       thalia_log.action(`Saving ${filePath}...`);
       thalia_log.setOptionsWhile({ action: false }, () => {
         thalia_fs_dir.createForFile(filePath);
       });
       fs.writeFileSync(filePath.absolute(), data);
-    },
-    options,
-  );
+  });
 }
 
 export function writeJson(
@@ -277,7 +275,7 @@ export function writeJson(
   data: any,
   options?: {
     crlfLineEndings?: boolean;
-  } & SmartOperationOptions<'different'>,
+  } & smartOperation.Options<{ path: thalia_fs_Path; data: string }>,
 ): void {
   const filePath = thalia_fs_Path.ensure(filename);
   writeText(filePath, JSON.stringify(data, undefined, '  '), options);
@@ -288,23 +286,20 @@ export function writeText(
   data: string,
   options?: {
     crlfLineEndings?: boolean;
-  } & SmartOperationOptions<'different'>,
+  } & smartOperation.Options<{ path: thalia_fs_Path; data: string }>,
 ): void {
+  options = { ...{ if: thalia_if.differentContents }, ...options };
   const filePath = thalia_fs_Path.ensure(filename);
 
   if (options?.crlfLineEndings) {
     data = data.replace(/\n/g, '\r\n');
   }
 
-  smartOperation(
-    () => hasDifferentContents(filePath, data),
-    () => {
+  smartOperation(options, { path: filePath, data }, () => {
       thalia_log.action(`Saving ${filePath}...`);
       thalia_log.setOptionsWhile({ action: false }, () => {
         thalia_fs_dir.createForFile(filePath);
       });
       fs.writeFileSync(filePath.absolute(), data);
-    },
-    options,
-  );
+  });
 }

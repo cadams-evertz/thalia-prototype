@@ -1,15 +1,16 @@
 import * as fs from 'fs';
 
+import * as thalia_if from '../if';
 import * as thalia_log from '../log';
 import * as thalia_fs_file from './file';
 import { Path as thalia_fs_Path, Pathlike as thalia_fs_Pathlike } from './Path';
 
-import { smartOperation, ArrayOrSingle, SmartOperationOptions } from '../internal';
+import { ArrayOrSingle, smartOperation } from '../internal';
 
 export function copy(
   srcDirName: thalia_fs_Pathlike,
   destDirName: thalia_fs_Pathlike,
-  options?: SmartOperationOptions<'newer'>,
+  options?: smartOperation.Options<{ source: thalia_fs_Path; destination: thalia_fs_Path }>,
 ): boolean {
   const srcDirPath = thalia_fs_Path.ensure(srcDirName);
   const destDirPath = thalia_fs_Path.ensure(destDirName);
@@ -23,41 +24,37 @@ export function copy(
   return executed;
 }
 
-export function create(dirName: thalia_fs_Pathlike, options?: SmartOperationOptions<'missing'>): boolean {
+export function create(dirName: thalia_fs_Pathlike, options?: smartOperation.Options<thalia_fs_Path>): boolean {
+  options = { ...{ if: thalia_if.doesNotExist }, ...options };
+
   const dirPath = thalia_fs_Path.ensure(dirName);
 
-  return smartOperation(
-    () => !dirPath.exists(),
-    () => {
+  return smartOperation<thalia_fs_Path>(options, dirPath, () => {
       thalia_log.action(`Creating directory ${dirPath}...`);
       fs.mkdirSync(dirPath.absolute(), { recursive: true });
-    },
-    options,
-  );
+  });
 }
 
-export function createForFile(filename: thalia_fs_Pathlike, options?: SmartOperationOptions<'missing'>): boolean {
+export function createForFile(filename: thalia_fs_Pathlike, options?: smartOperation.Options<thalia_fs_Path>): boolean {
   const filePath = thalia_fs_Path.ensure(filename);
   return create(filePath.dirPath(), options);
 }
 
 export function delete_(
   potentialDirnames: ArrayOrSingle<thalia_fs_Pathlike>,
-  options?: SmartOperationOptions<'exists'>,
+  options?: smartOperation.Options<thalia_fs_Path>,
 ): boolean {
+  options = { ...{ if: thalia_if.exists }, ...options };
+
   const dirPaths = thalia_fs_Path.ensureArray(potentialDirnames);
   let executed = false;
 
   for (const dirPath of dirPaths) {
     if (
-      smartOperation(
-        () => dirPath.exists(),
-        () => {
+      smartOperation(options, dirPath, () => {
           thalia_log.action(`Deleting ${dirPath}...`);
           fs.rmSync(dirPath.absolute(), { force: true, recursive: true });
-        },
-        options,
-      )
+      })
     ) {
       executed = true;
     }

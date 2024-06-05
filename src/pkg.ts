@@ -4,10 +4,11 @@ import * as JsZipSync from 'jszip-sync';
 import * as tar_ from 'tar';
 
 import * as thalia_fs from './fs';
+import * as thalia_if from './if';
 import * as thalia_log from './log';
 import * as thalia_platform from './platform';
 import * as thalia_process from './process';
-import { smartOperation, SmartOperationOptions } from './internal';
+import { ArrayOrSingle, smartOperation } from './internal';
 
 export function createZip(zipFilename: thalia_fs.Pathlike, arg: (zip: JsZipSync) => void): void {
   const zipFilePath = thalia_fs.Path.ensure(zipFilename);
@@ -35,34 +36,32 @@ export interface DebOptions {
 export function deb(
   debDirName: thalia_fs.Pathlike,
   debOptions: DebOptions,
-  options?: SmartOperationOptions<'newer'>,
+  options?: smartOperation.Options<{ source: thalia_fs.Path; destination: thalia_fs.Path }>,
 ): boolean {
+  options = { ...{ if: thalia_if.newer }, ...options };
+
   const debDirPath = thalia_fs.Path.ensure(debDirName);
   const debFilePath = debDirPath.append('.deb');
 
-  return smartOperation(
-    () => thalia_fs.file.isNewer(debDirPath, debFilePath),
-    () => {
-      const debianDirPath = debDirPath.joinWith('DEBIAN');
-      const controlFilePath = debianDirPath.joinWith('control');
+  return smartOperation(options, { source: debDirPath, destination: debFilePath }, () => {
+    const debianDirPath = debDirPath.joinWith('DEBIAN');
+    const controlFilePath = debianDirPath.joinWith('control');
 
-      const controlContents = `Package: ${debOptions.name}
+    const controlContents = `Package: ${debOptions.name}
 Version: ${debOptions.version}
 Maintainer: ${debOptions.maintainer}
 Architecture: ${debOptions.architecture ?? 'all'}
 Description: ${debOptions.description}
 `;
-      thalia_log.setOptionsWhile({ action: false }, () => {
-        thalia_fs.file.writeText(controlFilePath, controlContents, {
-          onlyIf: options?.onlyIf === 'always' ? 'always' : undefined,
-        });
+    thalia_log.setOptionsWhile({ action: false }, () => {
+      thalia_fs.file.writeText(controlFilePath, controlContents, {
+        if: options?.if === thalia_if.always ? thalia_if.always : undefined,
       });
+    });
 
-      thalia_log.action(`Creating package ${debFilePath}...`);
-      thalia_process.execute(`dpkg-deb --build ${debDirPath}`);
-    },
-    options,
-  );
+    thalia_log.action(`Creating package ${debFilePath}...`);
+    thalia_process.execute(`dpkg-deb --build ${debDirPath}`);
+  });
 }
 
 export interface MultipackageOptions extends DebOptions {
@@ -124,20 +123,18 @@ export function multipackage(options: MultipackageOptions): thalia_fs.Path[] {
 export function tar(
   tarFilename: thalia_fs.Pathlike,
   dirName: thalia_fs.Pathlike,
-  options?: SmartOperationOptions<'newer'>,
+  options?: smartOperation.Options<{ source: ArrayOrSingle<thalia_fs.Path>; destination: thalia_fs.Path }>,
 ): boolean {
+  options = { ...{ if: thalia_if.newer }, ...options };
+
   const tarFilePath = thalia_fs.Path.ensure(tarFilename);
   const dirPath = thalia_fs.Path.ensure(dirName);
 
-  return smartOperation(
-    () => thalia_fs.file.isNewer(thalia_fs.file.find(dirPath), tarFilePath),
-    () => {
-      thalia_log.action(`Creating package ${tarFilePath}...`);
-      const gzip = tarFilePath.endsWith('.gz');
-      tar_.create({ gzip, file: tarFilePath.absolute(), sync: true, cwd: dirPath.absolute() }, ['.']);
-    },
-    options,
-  );
+  return smartOperation(options, { source: thalia_fs.file.find(dirPath), destination: tarFilePath }, () => {
+    thalia_log.action(`Creating package ${tarFilePath}...`);
+    const gzip = tarFilePath.endsWith('.gz');
+    tar_.create({ gzip, file: tarFilePath.absolute(), sync: true, cwd: dirPath.absolute() }, ['.']);
+  });
 }
 
 export function untar(tarFilename: thalia_fs.Pathlike, extractDirName: thalia_fs.Pathlike): void {
@@ -183,30 +180,28 @@ export async function unzip(zipFilename: thalia_fs.Pathlike, extractDirName: tha
 export function zip(
   zipFilename: thalia_fs.Pathlike,
   dirName: thalia_fs.Pathlike,
-  options?: SmartOperationOptions<'newer'>,
+  options?: smartOperation.Options<{ source: ArrayOrSingle<thalia_fs.Path>; destination: thalia_fs.Path }>,
 ): boolean {
+  options = { ...{ if: thalia_if.newer }, ...options };
+
   const zipFilePath = thalia_fs.Path.ensure(zipFilename);
   const dirPath = thalia_fs.Path.ensure(dirName);
 
-  return smartOperation(
-    () => thalia_fs.file.isNewer(thalia_fs.file.find(dirPath), zipFilePath),
-    () => {
-      const walk = (zip: JsZipSync, dirPath: thalia_fs.Path) => {
-        for (const path of thalia_fs.dir.read(dirPath)) {
-          if (path.isDirectory()) {
-            walk(zip.folder(path.relativeTo(dirPath)), path);
-          } else {
-            zip.file(path.relativeTo(dirPath), thalia_fs.file.readBinary(path));
-          }
+  return smartOperation(options, { source: thalia_fs.file.find(dirPath), destination: zipFilePath }, () => {
+    const walk = (zip: JsZipSync, dirPath: thalia_fs.Path) => {
+      for (const path of thalia_fs.dir.read(dirPath)) {
+        if (path.isDirectory()) {
+          walk(zip.folder(path.relativeTo(dirPath)), path);
+        } else {
+          zip.file(path.relativeTo(dirPath), thalia_fs.file.readBinary(path));
         }
-      };
+      }
+    };
 
-      createZip(zipFilePath, zip => {
-        walk(zip, dirPath);
-      });
-    },
-    options,
-  );
+    createZip(zipFilePath, zip => {
+      walk(zip, dirPath);
+    });
+  });
 }
 
 function checksum(filePath: thalia_fs.Path, options: { md5?: boolean; sha256?: boolean }): thalia_fs.Path[] {

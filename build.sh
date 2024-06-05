@@ -18,7 +18,7 @@ runQuiet() {
 }
 
 banner "Prettiering..."
-runQuiet npx prettier src --write 2>&1 > temp.out
+runQuiet npx prettier src --write
 
 banner "Testing..."
 runQuiet npx ts-node node_modules/jasmine/bin/jasmine $(find src -name '*.spec.ts')

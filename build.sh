@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+echo "Prettiering..."
+npx prettier src --write
+
 mkdir -p dist
 cd dist
 

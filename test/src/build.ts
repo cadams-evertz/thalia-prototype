@@ -3,8 +3,7 @@ import * as thalia from 'thalia';
 import { buildSrcSubdir } from './subdir/build';
 
 export function buildSrc(): void {
-  console.log('--- src START ---');
-  thalia.submod.foo();
+  thalia.log.info('--- src START ---');
   buildSrcSubdir();
-  console.log('--- src END ---');
+  thalia.log.info('--- src END ---');
 }

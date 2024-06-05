@@ -5,6 +5,13 @@
   "author": "Chris Adams",
   "license": "ISC",
   "devDependencies": {
-    "thalia": "https://github.com/cadams-evertz/thalia-prototype/releases/download/0.0.2/thalia-0.0.2.tgz"
-  }
+    "thalia": "file:../dist/thalia-0.0.3.tgz"
+  },
+  "//": [
+    {
+      "devDependencies": {
+        "thalia": "https://github.com/cadams-evertz/thalia-prototype/releases/download/0.0.2/thalia-0.0.2.tgz"
+      }
+    }
+  ]
 }

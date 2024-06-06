@@ -1,6 +1,5 @@
 import axios from 'axios';
-// @ts-ignore - No types available?
-import * as JsZipSync from 'jszip-sync';
+import * as JsZip from 'jszip';
 import * as tar_ from 'tar';
 
 import * as thl_fs from './fs';
@@ -8,20 +7,14 @@ import * as thl_if from './if';
 import * as thl_log from './log';
 import * as thl_platform from './platform';
 import * as thl_process from './process';
-import { ArrayOrSingle, smartOperation } from './internal';
+import { ArrayOrSingle, asyncSmartOperation, smartOperation } from './internal';
 
-export function createZip(zipFilename: thl_fs.Pathlike, arg: (zip: JsZipSync) => void): void {
+export async function createZip(zipFilename: thl_fs.Pathlike, arg: (zip: JsZip) => void): Promise<void> {
   const zipFilePath = thl_fs.Path.ensure(zipFilename);
   thl_log.action(`Creating package ${zipFilePath}...`);
-  const zip = new JsZipSync();
-  const data = zip.sync(() => {
-    arg(zip);
-    let data: Uint8Array | undefined = undefined;
-    zip.generateAsync({ compression: 'DEFLATE', type: 'uint8array' }).then((data_: Uint8Array) => {
-      data = data_;
-    });
-    return data;
-  });
+  const zip = new JsZip();
+  arg(zip);
+  const data = await zip.generateAsync({ compression: 'DEFLATE', type: 'uint8array' });
   thl_fs.file.writeBinary(zipFilePath.absolute(), data);
 }
 
@@ -163,7 +156,7 @@ export async function unzip(zipFilename: thl_fs.Pathlike, extractDirName: thl_fs
     zipData = thl_fs.file.readBinary(zipFilePath);
   }
 
-  const zip = await new JsZipSync().loadAsync(zipData);
+  const zip = await new JsZip().loadAsync(zipData);
 
   for (const unknownEntry of Object.values(zip.files)) {
     const entry = unknownEntry as any;
@@ -177,18 +170,18 @@ export async function unzip(zipFilename: thl_fs.Pathlike, extractDirName: thl_fs
   }
 }
 
-export function zip(
+export async function zip(
   zipFilename: thl_fs.Pathlike,
   dirName: thl_fs.Pathlike,
   options?: smartOperation.Options<{ source: ArrayOrSingle<thl_fs.Path>; destination: thl_fs.Path }>,
-): boolean {
+): Promise<boolean> {
   options = { ...{ if: thl_if.newer }, ...options };
 
   const zipFilePath = thl_fs.Path.ensure(zipFilename);
   const dirPath = thl_fs.Path.ensure(dirName);
 
-  return smartOperation(options, { source: thl_fs.file.find(dirPath), destination: zipFilePath }, () => {
-    const walk = (zip: JsZipSync, dirPath: thl_fs.Path) => {
+  return asyncSmartOperation(options, { source: thl_fs.file.find(dirPath), destination: zipFilePath }, async () => {
+    const walk = (zip: JsZip, dirPath: thl_fs.Path) => {
       for (const path of thl_fs.dir.read(dirPath)) {
         if (path.isDirectory()) {
           walk(zip.folder(path.relativeTo(dirPath)), path);
@@ -198,7 +191,7 @@ export function zip(
       }
     };
 
-    createZip(zipFilePath, zip => {
+    await createZip(zipFilePath, zip => {
       walk(zip, dirPath);
     });
   });

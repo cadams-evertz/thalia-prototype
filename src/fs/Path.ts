@@ -1,8 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import * as thalia_fs_dir from './dir';
-import * as thalia_util from '../util';
+import * as thl_fs_dir from './dir';
+import * as thl_util from '../util';
 
 import { ensureArray, ArrayOrSingle } from '../internal';
 
@@ -71,7 +71,7 @@ export class Path {
   }
 
   public static pushAllIfUnique(array: Path[], newItems: Path[]): void {
-    thalia_util.pushAllIfUnique(
+    thl_util.pushAllIfUnique(
       array,
       newItems,
       (newItem, existingItem) => newItem.absolute() === existingItem.absolute(),
@@ -79,7 +79,7 @@ export class Path {
   }
 
   public static pushIfUnique(array: Path[], newItem: Path): void {
-    thalia_util.pushIfUnique(array, newItem, (newItem, existingItem) => newItem.absolute() === existingItem.absolute());
+    thl_util.pushIfUnique(array, newItem, (newItem, existingItem) => newItem.absolute() === existingItem.absolute());
   }
 
   public relativeTo(dirname: Pathlike): string {
@@ -88,7 +88,7 @@ export class Path {
   }
 
   public relativeToCurrent(): string {
-    return this.relativeTo(thalia_fs_dir.getCurrent());
+    return this.relativeTo(thl_fs_dir.getCurrent());
   }
 
   public static replaceRelative(text: string, options?: { relativeTo?: Pathlike }): string {
@@ -130,9 +130,7 @@ export class Path {
   }
 
   private resolve(filename: string, relativeTo?: Path): string {
-    return path.isAbsolute(filename)
-      ? filename
-      : (relativeTo ?? thalia_fs_dir.getCurrent()).joinWith(filename).absolute();
+    return path.isAbsolute(filename) ? filename : (relativeTo ?? thl_fs_dir.getCurrent()).joinWith(filename).absolute();
   }
 }
 

@@ -1,9 +1,9 @@
-import * as thalia_process from './process';
+import * as thl_process from './process';
 
 export function codename(): string {
   if (linux()) {
     return (
-      thalia_process
+      thl_process
         .execute('lsb_release -c', { captureOutput: true, echoCommand: false })
         .output.match(/Codename:[ \t]+([a-z]+)/)?.[1] ?? 'linux'
     );

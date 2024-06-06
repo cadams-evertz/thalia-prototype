@@ -1,10 +1,10 @@
-import * as thalia_env from '../env';
+import * as thl_env from '../env';
 
 class Ansi {
   public enabled: boolean;
 
   constructor() {
-    if (thalia_env.jenkins()) {
+    if (thl_env.jenkins()) {
       console.info('Jenkins detected. ANSI text effects disabled...');
       this.enabled = false;
     } else {

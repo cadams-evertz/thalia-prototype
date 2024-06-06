@@ -1,9 +1,9 @@
-import * as thalia from 'thalia';
+import * as thl from 'thalia';
 
 import { buildSrcSubdir } from './subdir/build';
 
 export function buildSrc(): void {
-  thalia.log.info('--- src START ---');
+  thl.log.info('--- src START ---');
   buildSrcSubdir();
-  thalia.log.info('--- src END ---');
+  thl.log.info('--- src END ---');
 }

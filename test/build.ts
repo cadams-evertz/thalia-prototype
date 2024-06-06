@@ -1,8 +1,8 @@
-import * as thalia from 'thalia';
+import * as thl from 'thalia';
 
 import { buildSrc } from './src/build';
 
-thalia.log.info('=== START ===');
+thl.log.info('=== START ===');
 buildSrc();
 
-thalia.log.info('=== END ===');
+thl.log.info('=== END ===');

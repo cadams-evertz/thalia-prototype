@@ -1,4 +1,4 @@
-import { ansi as thalia_terminal_ansi } from './Ansi';
+import { ansi as thl_terminal_ansi } from './Ansi';
 
 export class TextEffect {
   constructor(public readonly on: () => string, public readonly off: () => string) {}
@@ -11,8 +11,8 @@ export class TextEffect {
 export class SgrTextEffect extends TextEffect {
   constructor(on: string, off: string) {
     super(
-      () => thalia_terminal_ansi.sgr(on),
-      () => thalia_terminal_ansi.sgr(off),
+      () => thl_terminal_ansi.sgr(on),
+      () => thl_terminal_ansi.sgr(off),
     );
   }
 }
@@ -75,11 +75,11 @@ export class TextEffects {
   }
 
   public reset(): string {
-    return thalia_terminal_ansi.sgr('0');
+    return thl_terminal_ansi.sgr('0');
   }
 
   public setEnabled(enabled: boolean): void {
-    thalia_terminal_ansi.enabled = enabled;
+    thl_terminal_ansi.enabled = enabled;
   }
 }
 

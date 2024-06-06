@@ -1,8 +1,8 @@
-import * as thalia_fs from './fs';
-import * as thalia_platform from './platform';
-import * as thalia_process from './process';
-import * as thalia_terminal from './terminal';
-import * as thalia_text from './text';
+import * as thl_fs from './fs';
+import * as thl_platform from './platform';
+import * as thl_process from './process';
+import * as thl_terminal from './terminal';
+import * as thl_text from './text';
 
 interface Options {
   action?: boolean;
@@ -18,7 +18,7 @@ interface Options {
 
 let currentContext: string | undefined;
 let currentOptions: Options | undefined;
-const fx = thalia_terminal.textEffects;
+const fx = thl_terminal.textEffects;
 
 export function action(message: string): void {
   if (currentOptions?.action ?? true) {
@@ -28,14 +28,14 @@ export function action(message: string): void {
 
 export function banner(message: string): void {
   if (currentOptions?.banner ?? true) {
-    const emphasis = thalia_text.unicode.BOX_DRAWINGS_HEAVY_HORIZONTAL.repeat(3);
+    const emphasis = thl_text.unicode.BOX_DRAWINGS_HEAVY_HORIZONTAL.repeat(3);
     info(`${emphasis} ${message} ${emphasis}`);
   }
 }
 
 export function command(message: string): void {
   if (currentOptions?.command ?? true) {
-    const prompt = thalia_platform.windows() ? '>' : '$';
+    const prompt = thl_platform.windows() ? '>' : '$';
     print(console.info, fx.fg.bright.white, `${prompt} ${message}`);
   }
 }
@@ -64,7 +64,7 @@ export function fatalError(message: string, exitCode = 1): void {
     error(message);
   }
 
-  throw new thalia_process.ExitError(message, exitCode);
+  throw new thl_process.ExitError(message, exitCode);
 }
 
 export function info(message: string): void {
@@ -95,11 +95,11 @@ export function warning(message: string): void {
 
 function print(
   logFunction: (message?: any, ...optionalParams: any[]) => void,
-  outerEffect: thalia_terminal.TextEffect,
+  outerEffect: thl_terminal.TextEffect,
   message: string,
 ): void {
   if (currentOptions?.pathConversion ?? true) {
-    message = thalia_fs.Path.replaceRelative(message);
+    message = thl_fs.Path.replaceRelative(message);
   }
 
   if (currentContext) {

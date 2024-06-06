@@ -1,5 +1,5 @@
 {
-  "ts-node": {
-    "swc": true
+  "compilerOptions": {
+    "downlevelIteration": true
   }
 }

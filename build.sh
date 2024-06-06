@@ -18,7 +18,7 @@ runQuiet() {
 }
 
 banner "Prettiering..."
-runQuiet npx prettier src --write
+runQuiet npx prettier src test --write
 
 banner "Testing..."
 runQuiet npx ts-node node_modules/jasmine/bin/jasmine $(find src -name '*.spec.ts')
@@ -27,7 +27,7 @@ mkdir -p dist
 cd dist
 
 banner "Compiling typescript..."
-runQuiet npx tsc --pretty --declaration --declarationMap --sourceMap --outDir src ../src/index.ts
+runQuiet npx tsc --project ../tsconfig.json --outDir src
 
 banner "Packaging..."
 cp ../package.json .

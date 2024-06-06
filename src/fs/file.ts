@@ -21,9 +21,9 @@ export function copy(
   return smartOperation(options, { source: srcFilePath, destination: destFilePath }, () => {
     thl_log.setOptionsWhile({ action: false }, () => {
       thl_fs_dir.createForFile(destFilePath);
-      });
+    });
     thl_log.action(`Copying ${srcFilePath} to ${destFilePath}...`);
-      fs.copyFileSync(srcFilePath.absolute(), destFilePath.absolute());
+    fs.copyFileSync(srcFilePath.absolute(), destFilePath.absolute());
   });
 }
 
@@ -40,7 +40,7 @@ export function delete_(
     executed =
       smartOperation(options, filePath, () => {
         thl_log.action(`Deleting ${filePath}...`);
-          fs.rmSync(filePath.absolute(), { force: true });
+        fs.rmSync(filePath.absolute(), { force: true });
       }) || executed;
   }
 
@@ -165,6 +165,11 @@ export function checksum(
   return checksum;
 }
 
+export function chmod(filename: thl_fs_Pathlike, mode: fs.Mode): void {
+  const filePath = thl_fs_Path.ensure(filename);
+  fs.chmodSync(filePath.absolute(), mode);
+}
+
 export function md5sum(filename: thl_fs_Pathlike, options?: ChecksumOptions): string {
   return checksum(filename, thl_crypto.md5sum, { saveExtension: '.md5', ...options });
 }
@@ -252,6 +257,14 @@ export function readText(filename: thl_fs_Pathlike): string {
   return read(filename).toString();
 }
 
+export function rename(srcFilename: thl_fs_Pathlike, destFilename: thl_fs_Pathlike): void {
+  const srcFilePath = thl_fs_Path.ensure(srcFilename);
+  const destFilePath = thl_fs_Path.ensure(destFilename);
+
+  thl_log.action(`Renaming ${srcFilePath} to ${destFilePath}...`);
+  fs.renameSync(srcFilePath.absolute(), destFilePath.absolute());
+}
+
 export function writeBinary(
   filename: thl_fs_Pathlike,
   data: Uint8Array,
@@ -265,8 +278,8 @@ export function writeBinary(
     thl_log.action(`Saving ${filePath}...`);
     thl_log.setOptionsWhile({ action: false }, () => {
       thl_fs_dir.createForFile(filePath);
-      });
-      fs.writeFileSync(filePath.absolute(), data);
+    });
+    fs.writeFileSync(filePath.absolute(), data);
   });
 }
 
@@ -299,7 +312,7 @@ export function writeText(
     thl_log.action(`Saving ${filePath}...`);
     thl_log.setOptionsWhile({ action: false }, () => {
       thl_fs_dir.createForFile(filePath);
-      });
-      fs.writeFileSync(filePath.absolute(), data);
+    });
+    fs.writeFileSync(filePath.absolute(), data);
   });
 }

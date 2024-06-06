@@ -1,5 +1,12 @@
 {
-  "ts-node": {
-    "swc": true
-  }
+  "compilerOptions": {
+    "downlevelIteration": true,
+    "pretty": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true
+  },
+  "files": [
+    "src/index.ts"
+  ]
 }

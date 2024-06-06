@@ -7,6 +7,12 @@ import { Path as thl_fs_Path, Pathlike as thl_fs_Pathlike } from './Path';
 
 import { ArrayOrSingle, smartOperation } from '../internal';
 
+export function chmodRecursive(dirName: thl_fs_Pathlike, mode: fs.Mode | ((path: thl_fs_Path) => fs.Mode)): void {
+  for (const path of walk(dirName, { includeDirectories: true })) {
+    thl_fs_file.chmod(path, typeof mode === 'function' ? mode(path) : mode);
+  }
+}
+
 export function copy(
   srcDirName: thl_fs_Pathlike,
   destDirName: thl_fs_Pathlike,
@@ -31,7 +37,7 @@ export function create(dirName: thl_fs_Pathlike, options?: smartOperation.Option
 
   return smartOperation<thl_fs_Path>(options, dirPath, () => {
     thl_log.action(`Creating directory ${dirPath}...`);
-      fs.mkdirSync(dirPath.absolute(), { recursive: true });
+    fs.mkdirSync(dirPath.absolute(), { recursive: true });
   });
 }
 
@@ -53,7 +59,7 @@ export function delete_(
     if (
       smartOperation(options, dirPath, () => {
         thl_log.action(`Deleting ${dirPath}...`);
-          fs.rmSync(dirPath.absolute(), { force: true, recursive: true });
+        fs.rmSync(dirPath.absolute(), { force: true, recursive: true });
       })
     ) {
       executed = true;
@@ -85,4 +91,31 @@ export function setCurrentWhile(dirName: thl_fs_Pathlike, work: () => void): voi
   } finally {
     setCurrent(oldCurrent);
   }
+}
+
+export function* walk(dirName: thl_fs_Pathlike, options?: { includeDirectories?: boolean }): Generator<thl_fs_Path> {
+  const dirPath = thl_fs_Path.ensure(dirName);
+  const dir = fs.opendirSync(dirPath.absolute());
+
+  while (true) {
+    const dirEnt = dir.readSync();
+
+    if (!dirEnt) {
+      break;
+    }
+
+    const itemPath = dirPath.joinWith(dirEnt.name);
+
+    if (dirEnt.isDirectory()) {
+      if (options?.includeDirectories) {
+        yield itemPath;
+      }
+
+      yield* walk(itemPath, options);
+    } else if (dirEnt.isFile()) {
+      yield itemPath;
+    }
+  }
+
+  dir.closeSync();
 }

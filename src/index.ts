@@ -9,6 +9,7 @@ export * as npm from './npm';
 export * as pkg from './pkg';
 export * as platform from './platform';
 export * as process from './process';
+export * as task from './task';
 export * as terminal from './terminal';
 export * as text from './text';
 export * as util from './util';

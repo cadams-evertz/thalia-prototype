@@ -5,7 +5,7 @@
   "author": "Chris Adams",
   "license": "ISC",
   "devDependencies": {
-    "thalia": "file:../dist/thalia-0.0.3.tgz"
+    "thalia": "file:../../dist/thalia-0.0.3.tgz"
   },
   "//": [
     {

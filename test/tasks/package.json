@@ -1,0 +1,18 @@
+{
+  "name": "test",
+  "version": "0.0.1",
+  "description": "Test using package for thalia",
+  "author": "Chris Adams",
+  "license": "ISC",
+  "devDependencies": {
+    "thalia": "file:../../dist/thalia-0.0.3.tgz"
+  },
+  "//": [
+    {
+      "devDependencies": {
+        "//": "Remote path to github is the expected use case",
+        "thalia": "https://github.com/cadams-evertz/thalia-prototype/releases/download/0.0.2/thalia-0.0.2.tgz"
+      }
+    }
+  ]
+}

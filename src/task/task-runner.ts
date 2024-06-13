@@ -19,7 +19,7 @@ export class TaskRunner {
       }
     }
 
-    if (this.runningTasks.size === 0) {
+    if (this.runningTasks.size === 0 && this.remainingTasks.size > 0) {
       throw new Error('Could not start at least one initial task');
     }
 
@@ -50,9 +50,7 @@ export class TaskRunner {
 
   private add(...tasks: thl_task_Task[]): void {
     for (const task of tasks) {
-      if (task.options.dependencies) {
-        this.add(...task.options.dependencies);
-      }
+      this.add(...task.dependencies);
 
       if (!this.remainingTasks.has(task)) {
         this.remainingTasks.add(task);
@@ -62,9 +60,7 @@ export class TaskRunner {
 
   private startNextTask(): boolean {
     for (const task of this.remainingTasks) {
-      task.refreshStatus();
-
-      if (task.status === 'ready') {
+      if (task.dependenciesComplete()) {
         task.start();
         this.runningTasks.add(task);
         this.remainingTasks.delete(task);

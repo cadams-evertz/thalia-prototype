@@ -24,13 +24,61 @@ export namespace TestTask {
   }
 }
 
+export class CppTask extends thl.task.ChildProcessTask {
+  constructor(options: CppTask.Options) {
+    super({ ...options, command: `g++ ${options.commandSuffix}` });
+  }
+}
+
+export namespace CppTask {
+  export interface Options extends Omit<thl.task.ChildProcessTask.Options, 'command'> {
+    commandSuffix: string;
+  }
+}
+
+export class CppCompileTask extends CppTask {
+  constructor(options: CppCompileTask.Options) {
+    super({
+      ...options,
+      inputs: [options.source],
+      outputs: [`${options.source}.o`],
+      commandSuffix: `-c {{inputs}} -o {{outputs}}`,
+    });
+  }
+}
+
+export namespace CppCompileTask {
+  export interface Options extends Omit<CppTask.Options, 'commandSuffix' | 'inputs' | 'outputs'> {
+    source: thl.fs.Pathlike;
+  }
+}
+
+export class CppLinkTask extends CppTask {
+  constructor(options: CppLinkTask.Options) {
+    super({ ...options, outputs: [options.output], commandSuffix: `{{inputs}} -o {{outputs}}` });
+  }
+}
+
+export namespace CppLinkTask {
+  export interface Options extends Omit<CppTask.Options, 'commandSuffix' | 'inputs' | 'outputs'> {
+    inputs: CppCompileTask[];
+    output: thl.fs.Pathlike;
+  }
+}
+
 async function main(): Promise<void> {
   thl.log.info('=== START ===');
 
-  const a = new thl.task.ChildProcessTask({ command: 'g++ -c a.cpp' });
-  const b = new thl.task.ChildProcessTask({ command: 'g++ -c b.cpp' });
-  const t1 = new TestTask({ name: 't1', fail: false });
-  const exe = new thl.task.ChildProcessTask({ command: 'g++ a.o b.o', dependencies: [a, b, t1] });
+  const a_o = new CppCompileTask({
+    source: 'a.cpp',
+  });
+  const b_o = new CppCompileTask({
+    source: 'b.cpp',
+  });
+  const exe = new CppLinkTask({
+    inputs: [a_o, b_o],
+    output: 'a.out',
+  });
   await exe.runAll();
 
   thl.log.info('=== END ===');

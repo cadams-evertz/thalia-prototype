@@ -3,11 +3,17 @@ import { Task as thl_task_Task } from './task';
 
 export abstract class FileOutputTask extends thl_task_Task {
   public get options(): FileOutputTask.Options {
-    return this._options as FileOutputTask.Options;
+    return this.baseOptions as FileOutputTask.Options;
   }
 
   constructor(options: FileOutputTask.Options) {
     super(options);
+  }
+
+  public toString(): string {
+    return this.options.outputs
+      ? this.options.outputs.map(output => thl_fs.Path.ensure(output).absolute()).join(' ')
+      : '';
   }
 }
 

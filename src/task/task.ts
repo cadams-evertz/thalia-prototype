@@ -1,15 +1,19 @@
 import { TaskRunner, TaskRunner as tlh_task_TaskRunner } from './task-runner';
 
 export abstract class Task {
-  public get dependencies(): Task[] {
-    return this._options.dependencies ?? [];
-  }
-
-  protected _options: Task.Options;
+  public abstract get dependencies(): Task[];
 
   protected _status: Task.Status = 'waiting';
   public get status(): Task.Status {
     return this._status;
+  }
+
+  private _options: Task.Options;
+  public get options(): Task.Options {
+    return this._options;
+  }
+  protected get baseOptions(): Task.Options {
+    return this._options;
   }
 
   constructor(options: Task.Options) {
@@ -48,9 +52,7 @@ export abstract class Task {
 }
 
 export namespace Task {
-  export interface Options {
-    dependencies?: Task[];
-  }
+  export interface Options {}
 
   export type Status = 'waiting' | 'running' | 'complete' | 'error';
 }

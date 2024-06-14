@@ -5,12 +5,12 @@ import { Task as thl_task_Task } from './task';
 export class TaskRunner {
   public jobs: number;
 
-  private readonly debug: boolean;
+  private readonly debug: Debug | undefined;
   private readonly remainingTasks = new Set<thl_task_Task>();
   private readonly runningTasks = new Set<thl_task_Task>();
 
   constructor(task: thl_task_Task, options?: TaskRunner.Options) {
-    this.debug = !!options?.debug;
+    this.debug = options?.debug;
     this.jobs = options?.jobs ? options.jobs : Math.max(1, thl_process.cpuCount() - 1);
     this.add(task);
   }
@@ -32,10 +32,10 @@ export class TaskRunner {
         // @ts-ignore - Promise.any not found?
         const finished: Task = await Promise.any(runningTaskPromises);
 
-        this.debugLog(`end ${finished.repr()}`);
+        this.debugLog(`End`, finished);
 
         if (finished.status === 'error') {
-          throw new Error('Task finished with error status');
+          throw new Error(`Task '${finished.description}' finished with error status`);
         }
 
         this.runningTasks.delete(finished);
@@ -57,8 +57,8 @@ export class TaskRunner {
     for (const task of tasks) {
       this.add(...task.dependencies);
 
-      if (!this.remainingTasks.has(task)) {
-        this.debugLog(`Add ${task.repr()}`);
+      if (!this.remainingTasks.has(task) && task.status !== 'complete') {
+        this.debugLog(`Add`, task);
         this.remainingTasks.add(task);
       }
     }
@@ -66,30 +66,40 @@ export class TaskRunner {
 
   private startNextTask(): boolean {
     for (const task of this.remainingTasks) {
-      if (task.dependenciesComplete()) {
-        this.debugLog(`Start ${task.repr()}`);
+      const incompleteDependencies = task.dependencies.filter(dependency => dependency.status !== 'complete');
+
+      if (incompleteDependencies.length === 0) {
+        this.debugLog(`Start`, task);
         task.start();
         this.runningTasks.add(task);
         this.remainingTasks.delete(task);
         return true;
       } else {
-        this.debugLog(`Dependencies not yet complete for ${task.repr()}`);
+        this.debugLog(`Dependencies not yet complete for`, task);
+
+        for (const incompleteDependency of incompleteDependencies) {
+          this.debugLog(`- Incomplete`, incompleteDependency);
+        }
       }
     }
 
     return false;
   }
 
-  private debugLog(message: string): void {
+  private debugLog(message: string, task: thl_task_Task): void {
     if (this.debug) {
-      thl_log.debug(`[TaskRunner] ${message}`);
+      thl_log.debug(
+        `[TaskRunner] ${message} ` + (this.debug === 'brief' ? `'${task.description}'` : task.repr().toString()),
+      );
     }
   }
 }
 
 export namespace TaskRunner {
   export interface Options {
-    debug?: boolean;
+    debug?: Debug;
     jobs?: number;
   }
 }
+
+type Debug = 'brief' | 'verbose';

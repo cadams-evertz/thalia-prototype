@@ -1,24 +1,24 @@
 import * as thl_debug from '../debug';
+import * as thl_log from '../log';
 
 import { TaskRunner, TaskRunner as tlh_task_TaskRunner } from './task-runner';
 
 export abstract class Task {
   public abstract get dependencies(): Task[];
 
+  public readonly description: string;
+
   protected _status: Task.Status = 'waiting';
   public get status(): Task.Status {
     return this._status;
   }
-
-  constructor(_options: Task.Options) {}
+  constructor(options: Task.Options) {
+    this.description = options.description;
+  }
 
   private _promise?: Promise<Task>;
   public get promise(): Promise<Task> | undefined {
     return this._promise;
-  }
-
-  public dependenciesComplete(): boolean {
-    return this.dependencies.reduce((prev, dependency) => prev && dependency.status === 'complete', true);
   }
 
   public static is(value: unknown): value is Task {
@@ -26,7 +26,7 @@ export abstract class Task {
   }
 
   public async runAll(options?: tlh_task_TaskRunner.Options): Promise<void> {
-    new TaskRunner(this, options).run();
+    await new TaskRunner(this, options).run();
   }
 
   public start(): void {
@@ -46,10 +46,18 @@ export abstract class Task {
 
   public abstract run(): Promise<void>;
   public abstract repr(): thl_debug.Repr;
+
+  protected logDescription(): void {
+    if (this.description) {
+      thl_log.action(this.description);
+    }
+  }
 }
 
 export namespace Task {
-  export interface Options {}
+  export interface Options {
+    description: string;
+  }
 
   export type Status = 'waiting' | 'running' | 'complete' | 'error';
 }

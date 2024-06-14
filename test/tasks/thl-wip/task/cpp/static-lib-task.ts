@@ -12,6 +12,7 @@ export class StaticLibTask extends thl_task_cpp_Task {
     const lib = thl.fs.Path.ensure(options.lib);
     super({
       ...options,
+      description: `Creating ${lib}...`,
       inputs: sources,
       outputs: [lib],
       command: `ar rs {{lib}} {{objs}}`,
@@ -34,7 +35,7 @@ export class StaticLibTask extends thl_task_cpp_Task {
 }
 
 export namespace StaticLibTask {
-  export interface Options extends Omit<thl_task_cpp_Task.Options, 'command' | 'inputs' | 'outputs'> {
+  export interface Options extends Omit<thl_task_cpp_Task.Options, 'command' | 'description' | 'inputs' | 'outputs'> {
     sources: Array<thl.fs.Pathlike | thl_task_cpp_CompileTask>;
     lib: thl.fs.Pathlike;
   }

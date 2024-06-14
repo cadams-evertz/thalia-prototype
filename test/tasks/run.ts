@@ -24,7 +24,7 @@ async function main(): Promise<void> {
     includeDirs: ['include'],
     libs: [a],
   });
-  await exe.runAll({ debug: false });
+  await exe.runAll({ debug: undefined });
 
   thl.log.info('=== END ===');
 }

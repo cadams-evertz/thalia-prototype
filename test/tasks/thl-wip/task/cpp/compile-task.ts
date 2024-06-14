@@ -11,6 +11,7 @@ export class CompileTask extends thl_task_cpp_Task {
     const obj = source.append('.o');
     super({
       ...options,
+      description: `Compiling ${source}...`,
       inputs: [source],
       outputs: [obj],
       command: `g++ {{includes}} {{defines}} -c {{source}} -o {{obj}}`,
@@ -47,7 +48,7 @@ export class CompileTask extends thl_task_cpp_Task {
 }
 
 export namespace CompileTask {
-  export interface Options extends Omit<thl_task_cpp_Task.Options, 'command' | 'inputs' | 'outputs'> {
+  export interface Options extends Omit<thl_task_cpp_Task.Options, 'command' | 'description' | 'inputs' | 'outputs'> {
     source: thl.fs.Pathlike;
   }
 }

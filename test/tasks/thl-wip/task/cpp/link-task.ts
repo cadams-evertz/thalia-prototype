@@ -15,6 +15,7 @@ export class LinkTask extends thl_task_cpp_Task {
     const libs = options.libs ?? [];
     super({
       ...options,
+      description: `Linking ${exe}...`,
       inputs: [...sources, ...libs],
       outputs: [exe],
       command: `g++ {{objs}} -o {{exe}} {{libs}}`,
@@ -39,7 +40,7 @@ export class LinkTask extends thl_task_cpp_Task {
 }
 
 export namespace LinkTask {
-  export interface Options extends Omit<thl_task_cpp_Task.Options, 'command' | 'inputs' | 'outputs'> {
+  export interface Options extends Omit<thl_task_cpp_Task.Options, 'command' | 'description' | 'inputs' | 'outputs'> {
     sources: Array<thl.fs.Pathlike | thl_task_cpp_CompileTask>; // | thl_task_cpp_Task>;
     exe: thl.fs.Pathlike;
     libs?: thl_task_cpp_StaticLibTask[];

@@ -5,17 +5,18 @@ export class Task extends thl.task.ChildProcessTask {
   private readonly includeDirs: thl.fs.Path[];
 
   constructor(options: Task.Options) {
+    const defines = options.defines ?? [];
+    const includeDirs = thl.fs.Path.ensureArray(options.includeDirs ?? []);
     super({
       ...options,
       substitutions: {
-        defines: options.defines?.map(define => `-D${define}`),
-        includes: options.includeDirs?.map(includeDir => `-I${thl.fs.Path.ensure(includeDir)}`),
+        defines: defines.map(define => `-D${define}`),
+        includes: includeDirs.map(includeDir => `-I${thl.fs.Path.ensure(includeDir)}`),
         ...options.substitutions,
       },
     });
-    this.defines = options.defines ?? [];
-    this.includeDirs = thl.fs.Path.ensureArray(options.includeDirs ?? []);
-    // this.libs = thl.fs.Path.ensureArray(options.libs ?? []);
+    this.defines = defines;
+    this.includeDirs = includeDirs;
   }
 }
 
@@ -23,6 +24,5 @@ export namespace Task {
   export interface Options extends thl.task.ChildProcessTask.Options {
     defines?: string[];
     includeDirs?: thl.fs.Pathlike[];
-    // libs?: thl.fs.Pathlike[];
   }
 }

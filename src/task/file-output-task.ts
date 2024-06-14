@@ -20,3 +20,5 @@ export namespace FileOutputTask {
     outputs?: thl_fs.Pathlike[];
   }
 }
+
+export type FileOutputTasklike = thl_fs.Pathlike | FileOutputTask;

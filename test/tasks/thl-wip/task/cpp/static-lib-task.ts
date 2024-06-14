@@ -1,6 +1,9 @@
 import * as thl from 'thalia';
 
-import { CompileTask as thl_task_cpp_CompileTask } from './compile-task';
+import {
+  CompileTask as thl_task_cpp_CompileTask,
+  CompileTasklike as thl_task_cpp_CompileTasklike,
+} from './compile-task';
 import { Task as thl_task_cpp_Task } from './task';
 
 export class StaticLibTask extends thl_task_cpp_Task {
@@ -8,11 +11,11 @@ export class StaticLibTask extends thl_task_cpp_Task {
   private readonly lib: thl.fs.Path;
 
   constructor(options: StaticLibTask.Options) {
-    const sources = thl_task_cpp_CompileTask.ensureArray(options.sources, options);
+    const sources = thl_task_cpp_CompileTask.ensureArray(options.sources ?? [], options);
     const lib = thl.fs.Path.ensure(options.lib);
     super({
       ...options,
-      description: `Creating ${lib}...`,
+      description: sources.length > 0 ? `Creating ${lib}...` : lib.absolute(),
       inputs: sources,
       outputs: [lib],
       command: `ar rs {{lib}} {{objs}}`,
@@ -23,6 +26,14 @@ export class StaticLibTask extends thl_task_cpp_Task {
     });
     this.sources = sources;
     this.lib = lib;
+  }
+
+  public static ensure(value: StaticLibTasklike): StaticLibTask {
+    return StaticLibTask.is(value) ? value : new StaticLibTask({ lib: value });
+  }
+
+  public static ensureArray(values: StaticLibTasklike[]): StaticLibTask[] {
+    return values.map(value => StaticLibTask.ensure(value));
   }
 
   public asCompilerOptions(): string {
@@ -36,7 +47,9 @@ export class StaticLibTask extends thl_task_cpp_Task {
 
 export namespace StaticLibTask {
   export interface Options extends Omit<thl_task_cpp_Task.Options, 'command' | 'description' | 'inputs' | 'outputs'> {
-    sources: Array<thl.fs.Pathlike | thl_task_cpp_CompileTask>;
+    sources?: thl_task_cpp_CompileTasklike[];
     lib: thl.fs.Pathlike;
   }
 }
+
+export type StaticLibTasklike = thl.fs.Pathlike | StaticLibTask;

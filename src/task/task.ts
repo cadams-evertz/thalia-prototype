@@ -1,3 +1,5 @@
+import * as thl_debug from '../debug';
+
 import { TaskRunner, TaskRunner as tlh_task_TaskRunner } from './task-runner';
 
 export abstract class Task {
@@ -8,17 +10,7 @@ export abstract class Task {
     return this._status;
   }
 
-  private _options: Task.Options;
-  public get options(): Task.Options {
-    return this._options;
-  }
-  protected get baseOptions(): Task.Options {
-    return this._options;
-  }
-
-  constructor(options: Task.Options) {
-    this._options = options;
-  }
+  constructor(_options: Task.Options) {}
 
   private _promise?: Promise<Task>;
   public get promise(): Promise<Task> | undefined {
@@ -27,6 +19,10 @@ export abstract class Task {
 
   public dependenciesComplete(): boolean {
     return this.dependencies.reduce((prev, dependency) => prev && dependency.status === 'complete', true);
+  }
+
+  public static is(value: unknown): value is Task {
+    return value instanceof Task;
   }
 
   public async runAll(options?: tlh_task_TaskRunner.Options): Promise<void> {
@@ -49,6 +45,7 @@ export abstract class Task {
   }
 
   public abstract run(): Promise<void>;
+  public abstract repr(): thl_debug.Repr;
 }
 
 export namespace Task {

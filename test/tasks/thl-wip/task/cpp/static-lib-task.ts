@@ -4,30 +4,38 @@ import { CompileTask as thl_task_cpp_CompileTask } from './compile-task';
 import { Task as thl_task_cpp_Task } from './task';
 
 export class StaticLibTask extends thl_task_cpp_Task {
-  public get options(): StaticLibTask.Options {
-    return this.baseOptions as StaticLibTask.Options;
-  }
+  private readonly sources: thl_task_cpp_CompileTask[];
+  private readonly lib: thl.fs.Path;
 
   constructor(options: StaticLibTask.Options) {
+    const sources = thl_task_cpp_CompileTask.ensureArray(options.sources, options);
+    const lib = thl.fs.Path.ensure(options.lib);
     super({
       ...options,
-      inputs: options.inputs.map(input =>
-        input instanceof thl_task_cpp_CompileTask ? input : new thl_task_cpp_CompileTask({ ...options, source: input }),
-      ),
-      outputs: [options.output],
-      command: `ar rs {{outputs}} {{inputs}}`,
+      inputs: sources,
+      outputs: [lib],
+      command: `ar rs {{lib}} {{objs}}`,
+      substitutions: {
+        lib,
+        objs: sources.map(source => source.outputs).flat(),
+      },
     });
+    this.sources = sources;
+    this.lib = lib;
   }
 
   public asCompilerOptions(): string {
-    const output = thl.fs.Path.ensure(this.options.output);
-    return `-L${output.dirPath().absolute()} -l${output.basename('.a').slice(3)}`;
+    return `-L${this.lib.dirPath().absolute()} -l${this.lib.basename('.a').slice(3)}`;
+  }
+
+  public override repr(): thl.debug.Repr {
+    return new thl.debug.Repr('cpp.StaticLibTask', { sources: this.sources, lib: this.lib.absolute() });
   }
 }
 
 export namespace StaticLibTask {
   export interface Options extends Omit<thl_task_cpp_Task.Options, 'command' | 'inputs' | 'outputs'> {
-    inputs: Array<thl.fs.Pathlike | thl_task_cpp_CompileTask>;
-    output: thl.fs.Pathlike;
+    sources: Array<thl.fs.Pathlike | thl_task_cpp_CompileTask>;
+    lib: thl.fs.Pathlike;
   }
 }

@@ -49,7 +49,7 @@ export class Path {
       return pathlikes.map(pathlike => Path.ensure(pathlike, relativeTo));
     } else {
       const pathlike = pathlikes;
-      return pathlike instanceof Path ? pathlike : new Path(pathlike, relativeTo);
+      return Path.is(pathlike) ? pathlike : new Path(pathlike, relativeTo);
     }
   }
 
@@ -60,6 +60,10 @@ export class Path {
 
   public exists(): boolean {
     return fs.existsSync(this._absolute);
+  }
+
+  public static is(value: unknown): value is Path {
+    return value instanceof Path;
   }
 
   public isDirectory(): boolean {

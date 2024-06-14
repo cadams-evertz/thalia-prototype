@@ -1,4 +1,5 @@
 export * as crypto from './crypto';
+export * as debug from './debug';
 export * as deps from './deps';
 export * as env from './env';
 export * as fs from './fs';

@@ -1,3 +1,4 @@
+import * as thl_log from '../log';
 import * as thl_process from '../process';
 import { Task as thl_task_Task } from './task';
 
@@ -31,7 +32,7 @@ export class TaskRunner {
         // @ts-ignore - Promise.any not found?
         const finished: Task = await Promise.any(runningTaskPromises);
 
-        this.debugLog(`${finished} finished`);
+        this.debugLog(`end ${finished.repr()}`);
 
         if (finished.status === 'error') {
           throw new Error('Task finished with error status');
@@ -57,7 +58,7 @@ export class TaskRunner {
       this.add(...task.dependencies);
 
       if (!this.remainingTasks.has(task)) {
-        this.debugLog(`Adding ${task}`);
+        this.debugLog(`Add ${task.repr()}`);
         this.remainingTasks.add(task);
       }
     }
@@ -66,13 +67,13 @@ export class TaskRunner {
   private startNextTask(): boolean {
     for (const task of this.remainingTasks) {
       if (task.dependenciesComplete()) {
-        this.debugLog(`Starting ${task}`);
+        this.debugLog(`Start ${task.repr()}`);
         task.start();
         this.runningTasks.add(task);
         this.remainingTasks.delete(task);
         return true;
       } else {
-        this.debugLog(`Dependencies not yet complete for ${task}`);
+        this.debugLog(`Dependencies not yet complete for ${task.repr()}`);
       }
     }
 
@@ -81,7 +82,7 @@ export class TaskRunner {
 
   private debugLog(message: string): void {
     if (this.debug) {
-      console.debug(`[TaskRunner debug] ${message}`);
+      thl_log.debug(`[TaskRunner] ${message}`);
     }
   }
 }

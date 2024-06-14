@@ -1,9 +1,8 @@
 import * as thl from 'thalia';
 
 export class Task extends thl.task.ChildProcessTask {
-  public get options(): Task.Options {
-    return this.baseOptions as Task.Options;
-  }
+  private readonly defines: string[];
+  private readonly includeDirs: thl.fs.Path[];
 
   constructor(options: Task.Options) {
     super({
@@ -14,6 +13,9 @@ export class Task extends thl.task.ChildProcessTask {
         ...options.substitutions,
       },
     });
+    this.defines = options.defines ?? [];
+    this.includeDirs = thl.fs.Path.ensureArray(options.includeDirs ?? []);
+    // this.libs = thl.fs.Path.ensureArray(options.libs ?? []);
   }
 }
 
@@ -21,6 +23,6 @@ export namespace Task {
   export interface Options extends thl.task.ChildProcessTask.Options {
     defines?: string[];
     includeDirs?: thl.fs.Pathlike[];
-    libs?: thl.fs.Pathlike[];
+    // libs?: thl.fs.Pathlike[];
   }
 }

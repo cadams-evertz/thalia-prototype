@@ -25,3 +25,46 @@ export function pushIfUnique<T>(array: T[], newItem: T, equals?: (newItem: T, ex
 
   array.push(newItem);
 }
+
+export function* walkObject(
+  obj: Record<string, any> | any[] | null | undefined,
+  parentPath: string[] = [],
+): Generator<walkObject.Entry> {
+  if (obj) {
+    for (const key of Object.keys(obj)) {
+      const path = [...parentPath, key];
+      const value = obj[key];
+
+      yield new walkObject.Entry(obj, key, path);
+
+      if (typeof value === 'object' || Array.isArray(value)) {
+        yield* walkObject(value, path);
+      }
+    }
+  }
+}
+
+export namespace walkObject {
+  export class Entry {
+    public get value(): any {
+      return this.parentObject[this.key];
+    }
+    public set value(value: any) {
+      this.parentObject[this.key] = value;
+    }
+
+    constructor(
+      private readonly parentObject: Record<string, any>,
+      public readonly key: string,
+      public readonly path: string[],
+    ) {}
+
+    public delete(): void {
+      delete this.parentObject[this.key];
+    }
+
+    public toString(): string {
+      return `${this.path.join('/')}=${JSON.stringify(this.value)}`;
+    }
+  }
+}

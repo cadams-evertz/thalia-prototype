@@ -1,19 +1,17 @@
 import * as thl_fs from '../fs';
+
 import { Task as thl_task_Task } from './task';
 
 export abstract class FileOutputTask extends thl_task_Task {
-  public get options(): FileOutputTask.Options {
-    return this.baseOptions as FileOutputTask.Options;
-  }
+  public readonly outputs: thl_fs.Path[];
 
   constructor(options: FileOutputTask.Options) {
     super(options);
+    this.outputs = thl_fs.Path.ensureArray(options.outputs ?? []);
   }
 
-  public toString(): string {
-    return this.options.outputs
-      ? this.options.outputs.map(output => thl_fs.Path.ensure(output).absolute()).join(' ')
-      : '';
+  public static is(value: unknown): value is FileOutputTask {
+    return value instanceof FileOutputTask;
   }
 }
 

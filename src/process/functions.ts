@@ -19,7 +19,7 @@ export function execute(
   command: string | thl_fs.Path,
   options?: { captureOutput?: boolean; echoCommand?: boolean; exitOnError?: boolean; hideOutput?: boolean },
 ): ExecuteResult {
-  if (command instanceof thl_fs.Path) {
+  if (thl_fs.Path.is(command)) {
     command = command.absolute();
   }
 
@@ -44,7 +44,7 @@ export async function executeAsync(
   command: string | thl_fs.Path,
   options?: { captureOutput?: boolean; echoCommand?: boolean; exitOnError?: boolean; hideOutput?: boolean },
 ): Promise<ExecuteResult> {
-  if (command instanceof thl_fs.Path) {
+  if (thl_fs.Path.is(command)) {
     command = command.absolute();
   }
 

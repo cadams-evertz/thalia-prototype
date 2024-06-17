@@ -47,7 +47,7 @@ export class LinkTask extends thl_task_cpp_Task {
 
 export namespace LinkTask {
   export interface Options extends Omit<thl_task_cpp_Task.Options, 'command' | 'description' | 'inputs' | 'outputs'> {
-    sources: thl_task_cpp_CompileTasklike[]; // | thl_task_cpp_Task>;
+    sources: thl_task_cpp_CompileTasklike[];
     exe: thl.fs.Pathlike;
     libs?: thl_task_cpp_StaticLibTasklike[];
   }

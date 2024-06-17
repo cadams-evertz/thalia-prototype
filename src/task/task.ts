@@ -1,18 +1,19 @@
 import * as thl_debug from '../debug';
 import * as thl_log from '../log';
 
-import { TaskRunner, TaskRunner as tlh_task_TaskRunner } from './task-runner';
+import { TaskRunner as tlh_task_TaskRunner } from './task-runner';
 
 export abstract class Task {
-  public abstract get dependencies(): Task[];
-
+  public readonly dependencies: Task[];
   public readonly description: string;
 
   protected _status: Task.Status = 'waiting';
   public get status(): Task.Status {
     return this._status;
   }
+
   constructor(options: Task.Options) {
+    this.dependencies = options.dependencies ?? [];
     this.description = options.description;
   }
 
@@ -26,7 +27,7 @@ export abstract class Task {
   }
 
   public async runAll(options?: tlh_task_TaskRunner.Options): Promise<void> {
-    await new TaskRunner(this, options).run();
+    await new tlh_task_TaskRunner(this, options).run();
   }
 
   public start(): void {
@@ -56,6 +57,7 @@ export abstract class Task {
 
 export namespace Task {
   export interface Options {
+    dependencies?: Task[];
     description: string;
   }
 

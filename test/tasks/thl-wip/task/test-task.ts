@@ -1,26 +1,27 @@
 import * as thl from 'thalia';
 
 export class TestTask extends thl.task.Task {
-  public override get dependencies(): thl.task.Task[] {
-    return [];
-  }
-
-  public get options(): TestTask.Options {
-    return super.options as TestTask.Options;
-  }
+  private readonly durationMs: number;
+  private readonly fail: boolean;
 
   constructor(options: TestTask.Options) {
     super(options);
+    this.durationMs = options.durationMs ?? 1000;
+    this.fail = !!options.fail;
+  }
+
+  public override repr(): thl.debug.Repr {
+    return new thl.debug.Repr('TestTask', { durationMs: this.durationMs, fail: this.fail });
   }
 
   public override async run(): Promise<void> {
-    console.log(`${this.options.name}: START`);
-    await thl.util.asyncTimeout(this.options.durationMs ?? 1000);
-    if (this.options.fail) {
-      console.log(`${this.options.name}: ERROR`);
+    console.log(`${this.description}: START`);
+    await thl.util.asyncTimeout(this.durationMs);
+    if (this.fail) {
+      console.log(`${this.description}: ERROR`);
       throw new Error('kaboom');
     }
-    console.log(`${this.options.name}: END`);
+    console.log(`${this.description}: END`);
   }
 }
 

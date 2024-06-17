@@ -3,39 +3,45 @@ import * as thl_fs from '../fs';
 import * as thl_process from '../process';
 import * as thl_text from '../text';
 
-import { FileOutputTask as thl_task_FileOutputTask } from './file-output-task';
-import { StaticFileTask as thl_task_StaticFileTask } from './static-file-task';
-import { Task as thl_task_Task } from './task';
+import {
+  FileProviderTask as thl_task_FileProviderTask,
+  FileProviderTasklike as thl_task_FileProviderTasklike,
+} from './file-provider-task';
 
-export class ChildProcessTask extends thl_task_FileOutputTask {
-  public override get dependencies(): thl_task_Task[] {
-    return this.inputs;
-  }
+export class ChildProcessTask extends thl_task_FileProviderTask {
+  public readonly outputs: thl_fs.Path[];
 
+  private readonly alwaysRun: boolean;
   private readonly command: string;
   private readonly echoCommand: boolean;
-  private readonly inputs: thl_task_FileOutputTask[];
+  private readonly inputs: thl_task_FileProviderTask[];
   private readonly substitutions: Record<string, unknown>;
 
   constructor(options: ChildProcessTask.Options) {
-    super(options);
+    const inputs = (options.inputs ?? []).map(input => thl_task_FileProviderTask.ensure(input));
+    const outputs = (options.outputs ?? []).map(output => thl_fs.Path.ensure(output));
+    super({
+      ...options,
+      dependencies: inputs,
+      files: outputs,
+    });
+    this.alwaysRun = !!options.alwaysRun;
     this.command = options.command;
     this.echoCommand = options.echoCommand ?? false;
-    this.inputs = (options.inputs ?? []).map(input =>
-      thl_task_FileOutputTask.is(input) ? input : new thl_task_StaticFileTask({ path: input }),
-    );
+    this.inputs = inputs;
+    this.outputs = outputs;
     this.substitutions = options.substitutions ?? {};
   }
 
   public override async run(): Promise<void> {
-    const allInputs = this.inputs.map(input => input.outputs).flat();
+    const allInputs = this.inputs.map(input => input.files).flat();
 
-    if (!thl_fs.file.isNewer(allInputs, this.outputs)) {
+    if (!this.alwaysRun && !thl_fs.file.isNewer(allInputs, this.outputs)) {
       return;
     }
 
     const substitutions = {
-      inputs: allInputs,
+      inputs: allInputs.map(input => (thl_task_FileProviderTask.is(input) ? input.files : input)).flat(),
       outputs: this.outputs,
       ...this.substitutions,
     };
@@ -51,10 +57,12 @@ export class ChildProcessTask extends thl_task_FileOutputTask {
 }
 
 export namespace ChildProcessTask {
-  export interface Options extends thl_task_FileOutputTask.Options {
+  export interface Options extends Omit<thl_task_FileProviderTask.Options, 'files'> {
+    alwaysRun?: boolean;
     command: string;
     echoCommand?: boolean;
-    inputs?: Array<thl_fs.Pathlike | thl_task_FileOutputTask>;
+    inputs?: thl_task_FileProviderTasklike[];
+    outputs?: thl_fs.Pathlike[];
     substitutions?: Record<string, unknown>;
   }
 }

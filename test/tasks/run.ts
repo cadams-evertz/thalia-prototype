@@ -2,21 +2,38 @@ import * as thl from 'thalia';
 
 import * as thlWip from './thl-wip';
 
+class PrebuildTask extends thl.task.FileProviderTask {
+  private readonly output: thl.fs.Path;
+
+  constructor() {
+    const output = thl.fs.Path.ensure('generated.cpp');
+    super({
+      description: `Generating ${output}...`,
+      files: [output],
+    });
+    this.output = output;
+  }
+
+  public override async run(): Promise<void> {
+    this.logDescription();
+    thl.fs.file.writeText(this.output, 'int generated() { return 123; }\n', { if: thl.if.differentContents });
+  }
+
+  public override repr(): thl.debug.Repr {
+    return new thl.debug.Repr('PrebuildTask', { output: this.output });
+  }
+}
+
 async function main(): Promise<void> {
   thl.log.info('=== START ===');
 
-  // const a_o = new thlWip.task.cpp.CompileTask({
-  //   source: 'a.cpp',
-  //   includeDirs: ['include'],
-  // });
-  // await a_o.runAll();
+  const p = new PrebuildTask();
   const a = new thlWip.task.cpp.StaticLibTask({
-    sources: ['a.cpp'],
+    sources: ['a.cpp', p],
     lib: 'liba.a',
     defines: ['NFOO'],
     includeDirs: ['include'],
   });
-  // await a.runAll();
   const exe = new thlWip.task.cpp.LinkTask({
     sources: ['b.cpp'],
     exe: 'a.out',

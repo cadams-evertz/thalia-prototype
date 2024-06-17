@@ -57,16 +57,20 @@ export async function executeAsync(
     stdio: options?.captureOutput ? 'pipe' : options?.hideOutput ? 'ignore' : 'inherit',
   });
 
-  return new Promise<{ exitCode: number; output: string }>((resolve, reject) => {
+  return new Promise<{ exitCode: number; output: string | undefined }>((resolve, reject) => {
     let output: string | undefined = undefined;
 
     if (options?.captureOutput) {
-      spawned.stdout.on('data', data => {
+      spawned.stdout?.on('data', data => {
         output = output !== undefined ? output + data : data;
       });
     }
 
     spawned.on('close', exitCode => {
+      if (exitCode === null) {
+        exitCode = 0;
+      }
+
       if (exitCode !== 0 && (options?.exitOnError ?? true)) {
         reject(new thl_process.ExitError(`${command} failed`, exitCode));
       } else {

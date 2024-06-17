@@ -5,7 +5,7 @@ export function codename(): string {
     return (
       thl_process
         .execute('lsb_release -c', { captureOutput: true, echoCommand: false })
-        .output.match(/Codename:[ \t]+([a-z]+)/)?.[1] ?? 'linux'
+        .output?.match(/Codename:[ \t]+([a-z]+)/)?.[1] ?? 'linux'
     );
   } else {
     return 'windows';

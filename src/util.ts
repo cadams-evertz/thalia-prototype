@@ -33,6 +33,7 @@ export function* walkObject(
   if (obj) {
     for (const key of Object.keys(obj)) {
       const path = [...parentPath, key];
+      // @ts-ignore - Doesn't like `any[]` here
       const value = obj[key];
 
       yield new walkObject.Entry(obj, key, path);

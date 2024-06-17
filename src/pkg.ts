@@ -184,7 +184,11 @@ export async function zip(
     const walk = (zip: JsZip, dirPath: thl_fs.Path) => {
       for (const path of thl_fs.dir.read(dirPath)) {
         if (path.isDirectory()) {
-          walk(zip.folder(path.relativeTo(dirPath)), path);
+          const zipped = zip.folder(path.relativeTo(dirPath));
+
+          if (zipped) {
+            walk(zipped, path);
+          }
         } else {
           zip.file(path.relativeTo(dirPath), thl_fs.file.readBinary(path));
         }

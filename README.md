@@ -9,7 +9,6 @@ TODO
 - Unit tests
 
 - Test script not type checking?
-- Enable strict
 - Build output directory
 - Add GroupTask
 - C++ options inheritance

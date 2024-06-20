@@ -20,7 +20,7 @@ class PrebuildTask extends thl.task.FileProviderTask {
   }
 }
 
-async function main(): Promise<void> {
+thl.util.safeMain(async () => {
   thl.log.info('=== START ===');
 
   const p = new PrebuildTask();
@@ -39,13 +39,11 @@ async function main(): Promise<void> {
   const exe = new thlWip.task.cpp.LinkTask({
     sources: ['b.cpp'],
     exe: 'a.out',
-    defines: ['NFOO'],
-    includeDirs: ['include'],
+    // defines: ['NFOO'],
+    // includeDirs: ['include'],
     libs: [a],
   });
   await exe.runAll({ debug: undefined });
 
   thl.log.info('=== END ===');
-}
-
-main();
+});

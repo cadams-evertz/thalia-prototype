@@ -1,3 +1,5 @@
+import * as thl_log from './log';
+
 export async function asyncTimeout(ms: number): Promise<void> {
   return new Promise<void>(resolve => setTimeout(resolve, ms));
 }
@@ -24,6 +26,14 @@ export function pushIfUnique<T>(array: T[], newItem: T, equals?: (newItem: T, ex
   }
 
   array.push(newItem);
+}
+
+export async function safeMain(main: () => void | Promise<void>): Promise<void> {
+  try {
+    await main();
+  } catch (error) {
+    thl_log.error(`${error}`);
+  }
 }
 
 export function* walkObject(

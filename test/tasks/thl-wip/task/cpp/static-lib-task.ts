@@ -1,23 +1,21 @@
 import * as thl from 'thalia';
 
-import {
-  CompileTask as thl_task_cpp_CompileTask,
-  CompileTasklike as thl_task_cpp_CompileTasklike,
-} from './compile-task';
-import { Task as thl_task_cpp_Task } from './task';
+import { CompileTask, CompileTasklike } from './compile-task';
+import { Task } from './task';
 
-export class StaticLibTask extends thl_task_cpp_Task {
-  private readonly sources: thl_task_cpp_CompileTask[];
+export class StaticLibTask extends Task {
+  private readonly sources: CompileTask[];
   private readonly lib: thl.fs.Path;
   private readonly libs: StaticLibTask[];
 
   constructor(options: StaticLibTask.Options) {
     const libs = options.libs ?? [];
-    const combinedOptions = thl_task_cpp_Task.Options.combine(options, libs);
-    const sources = thl_task_cpp_CompileTask.ensureArray(options.sources ?? [], combinedOptions);
+    const combinedOptions = Task.Options.combine(options, libs);
+    const sources = CompileTask.ensureArray(options.sources ?? [], combinedOptions);
+    const combinedOptions2 = Task.Options.combine(options, sources);
     const lib = thl.fs.Path.ensure(options.lib);
     super({
-      ...combinedOptions,
+      ...combinedOptions2,
       description: sources.length > 0 ? `Creating ${lib}...` : lib.absolute(),
       inputs: [...sources, ...libs],
       outputs: [lib],
@@ -41,8 +39,8 @@ export class StaticLibTask extends thl_task_cpp_Task {
 }
 
 export namespace StaticLibTask {
-  export interface Options extends Omit<thl_task_cpp_Task.Options, 'command' | 'description' | 'inputs' | 'outputs'> {
-    sources?: thl_task_cpp_CompileTasklike[];
+  export interface Options extends Omit<Task.Options, 'command' | 'description' | 'inputs' | 'outputs'> {
+    sources?: CompileTasklike[];
     lib: thl.fs.Pathlike;
     libs?: StaticLibTask[];
   }

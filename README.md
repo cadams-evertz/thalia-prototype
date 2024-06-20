@@ -10,6 +10,6 @@ TODO
 
 - Build output directory
 - Add GroupTask
-- C++ options inheritance
+- Debug/release variants
 - Input/output paths correct for imported tasks from subdirectories?
 - CleanTask

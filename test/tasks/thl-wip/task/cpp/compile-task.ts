@@ -1,19 +1,19 @@
 import * as thl from 'thalia';
 
-import { StaticLibTask as thl_task_cpp_StaticLibTask } from './static-lib-task';
-import { Task as thl_task_cpp_Task } from './task';
+import { StaticLibTask } from './static-lib-task';
+import { Task } from './task';
 
 // @ts-ignore - `ensure()` override
-export class CompileTask extends thl_task_cpp_Task {
+export class CompileTask extends Task {
   private readonly source: thl.task.FileProviderTask;
   private readonly obj: thl.fs.Path;
-  private readonly libs: thl_task_cpp_StaticLibTask[];
+  private readonly libs: StaticLibTask[];
 
   constructor(options: CompileTask.Options) {
     const source = thl.task.FileProviderTask.ensure(options.source);
     const obj = source.file.append('.o');
     const libs = options.libs ?? [];
-    const combinedOptions = thl_task_cpp_Task.Options.combine(options, libs);
+    const combinedOptions = Task.Options.combine(options, libs);
     super({
       ...combinedOptions,
       description: `Compiling ${source.file}...`,
@@ -44,9 +44,9 @@ export class CompileTask extends thl_task_cpp_Task {
 }
 
 export namespace CompileTask {
-  export interface Options extends Omit<thl_task_cpp_Task.Options, 'command' | 'description' | 'inputs' | 'outputs'> {
+  export interface Options extends Omit<Task.Options, 'command' | 'description' | 'inputs' | 'outputs'> {
     source: thl.task.FileProviderTasklike;
-    libs?: thl_task_cpp_StaticLibTask[];
+    libs?: StaticLibTask[];
   }
 }
 

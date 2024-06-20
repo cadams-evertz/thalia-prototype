@@ -4,21 +4,22 @@ import {
   CompileTask as thl_task_cpp_CompileTask,
   CompileTasklike as thl_task_cpp_CompileTasklike,
 } from './compile-task';
-import { Task as thl_task_cpp_Task } from './task';
-import { StaticLibTask as thl_task_cpp_StaticLibTask } from './static-lib-task';
+import { Task } from './task';
+import { StaticLibTask } from './static-lib-task';
 
-export class LinkTask extends thl_task_cpp_Task {
+export class LinkTask extends Task {
   private readonly sources: thl_task_cpp_CompileTask[];
   private readonly exe: thl.fs.Path;
-  private readonly libs: thl_task_cpp_StaticLibTask[];
+  private readonly libs: StaticLibTask[];
 
   constructor(options: LinkTask.Options) {
     const libs = options.libs ?? [];
-    const combinedOptions = thl_task_cpp_Task.Options.combine(options, libs);
+    const combinedOptions = Task.Options.combine(options, libs);
     const sources = thl_task_cpp_CompileTask.ensureArray(options.sources, combinedOptions);
+    const combinedOptions2 = Task.Options.combine(options, sources);
     const exe = thl.fs.Path.ensure(options.exe);
     super({
-      ...combinedOptions,
+      ...combinedOptions2,
       description: `Linking ${exe}...`,
       inputs: [...sources, ...libs],
       outputs: [exe],
@@ -36,9 +37,9 @@ export class LinkTask extends thl_task_cpp_Task {
 }
 
 export namespace LinkTask {
-  export interface Options extends Omit<thl_task_cpp_Task.Options, 'command' | 'description' | 'inputs' | 'outputs'> {
+  export interface Options extends Omit<Task.Options, 'command' | 'description' | 'inputs' | 'outputs'> {
     sources: thl_task_cpp_CompileTasklike[];
     exe: thl.fs.Pathlike;
-    libs?: thl_task_cpp_StaticLibTask[];
+    libs?: StaticLibTask[];
   }
 }

@@ -24,17 +24,17 @@ thl.util.safeMain(async () => {
   thl.log.info('=== START ===');
 
   const p = new PrebuildTask();
-  // const aa = new thlWip.task.cpp.CompileTask({
-  //   source: 'a.cpp',
-  //   defines: ['FOO'],
-  //   includeDirs: ['include/a'],
-  //   echoCommand: true,
-  // });
-  const a = new thlWip.task.cpp.StaticLibTask({
-    sources: ['a.cpp', p],
-    lib: 'liba.a',
+  const aa = new thlWip.task.cpp.CompileTask({
+    source: 'a.cpp',
     defines: ['FOO'],
     includeDirs: ['include/a'],
+    echoCommand: true,
+  });
+  const a = new thlWip.task.cpp.StaticLibTask({
+    sources: [aa, p],
+    lib: 'liba.a',
+    // defines: ['FOO'],
+    // includeDirs: ['include/a'],
     echoCommand: true,
   });
   // Prebuilt

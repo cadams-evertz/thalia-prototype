@@ -30,6 +30,8 @@ export class ChildProcessTask extends FileProviderTask {
   }
 
   public override async run(): Promise<void> {
+    FileProviderTask.confirmAllExists(this.inputs);
+
     const allInputs = this.inputs.map(input => input.files).flat();
 
     if (!this.alwaysRun && !thl_fs.file.isNewer(allInputs, this.outputs)) {

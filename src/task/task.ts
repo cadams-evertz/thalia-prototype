@@ -38,7 +38,8 @@ export abstract class Task {
           this._status = 'complete';
           resolve(this);
         })
-        .catch(() => {
+        .catch(error => {
+          thl_log.error(error);
           this._status = 'error';
           resolve(this);
         });

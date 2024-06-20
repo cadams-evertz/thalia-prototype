@@ -23,6 +23,20 @@ export abstract class FileProviderTask extends Task {
   public static is(value: unknown): value is FileProviderTask {
     return value instanceof FileProviderTask;
   }
+
+  public confirmExists(): void {
+    for (const file of this.files) {
+      if (!file.exists()) {
+        throw new Error(`Expected file ${file} does not exist`);
+      }
+    }
+  }
+
+  public static confirmAllExists(tasks: FileProviderTask[]): void {
+    for (const task of tasks) {
+      task.confirmExists();
+    }
+  }
 }
 
 export namespace FileProviderTask {

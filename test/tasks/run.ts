@@ -6,7 +6,7 @@ class PrebuildTask extends thl.task.FileProviderTask {
   private readonly output: thl.fs.Path;
 
   constructor() {
-    const output = thl.task.BuildDir.asBuildPath('generated.cpp');
+    const output = thl.task.BuildDir.asBuildPath('lib/a/src/generated.cpp');
     super({
       description: `Generating ${output}...`,
       files: [output],
@@ -36,17 +36,17 @@ thl.util.main(async (args: string[]) => {
 
   if (build) {
     const p = new PrebuildTask();
-    const aa = new thlWip.task.cpp.CompileTask({
-      source: 'a.cpp',
-      defines: ['FOO'],
-      includeDirs: ['include/a'],
-      echoCommand,
-    });
+    // const aa = new thlWip.task.cpp.CompileTask({
+    //   source: 'lib/a/src/a.cpp',
+    //   defines: ['FOO'],
+    //   includeDirs: ['lib/a/include'],
+    //   echoCommand,
+    // });
     const a = new thlWip.task.cpp.StaticLibTask({
-      sources: [aa, p],
-      lib: 'liba.a',
-      // defines: ['FOO'],
-      // includeDirs: ['include/a'],
+      sources: ['lib/a/src/a.cpp', p],
+      lib: 'lib/a/liba.a',
+      defines: ['FOO'],
+      includeDirs: ['lib/a/include'],
       echoCommand,
     });
     // Prebuilt
@@ -56,15 +56,15 @@ thl.util.main(async (args: string[]) => {
     //   includeDirs: ['include/a'],
     // });
     const b = new thlWip.task.cpp.StaticLibTask({
-      sources: ['b.cpp'],
-      lib: 'libb.a',
-      includeDirs: ['include/b'],
+      sources: ['lib/b/src/b.cpp'],
+      lib: 'lib/b/libb.a',
+      includeDirs: ['lib/b/include'],
       libs: [a],
       echoCommand,
     });
     const exe = new thlWip.task.cpp.LinkTask({
-      sources: ['main.cpp'],
-      exe: 'a.out',
+      sources: ['app/x/src/main.cpp'],
+      exe: 'app/x/x',
       echoCommand,
       libs: [b],
     });

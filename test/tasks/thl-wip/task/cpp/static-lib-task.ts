@@ -56,6 +56,10 @@ export class StaticLibTask extends Task {
       variant: variantOptions.variant,
     });
   }
+
+  public override createVariants(variantOptions: Task.VariantOptions[]): StaticLibTask[] {
+    return variantOptions.map(item => this.createVariant(item));
+  }
 }
 
 export namespace StaticLibTask {

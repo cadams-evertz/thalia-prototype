@@ -38,6 +38,7 @@ export abstract class Task extends thl.task.ChildProcessTask {
   }
 
   public abstract createVariant(variantOptions: Task.VariantOptions): Task;
+  public abstract createVariants(variantOptions: Task.VariantOptions[]): Task[];
 }
 
 export namespace Task {

@@ -45,6 +45,10 @@ export class CompileTask extends Task {
     });
   }
 
+  public override createVariants(variantOptions: Task.VariantOptions[]): CompileTask[] {
+    return variantOptions.map(item => this.createVariant(item));
+  }
+
   public static ensure(value: CompileTasklike, options: Omit<CompileTask.Options, 'source'>): CompileTask {
     return CompileTask.is(value) ? value : new CompileTask({ ...options, source: value });
   }

@@ -25,10 +25,10 @@ thl.util.main(async (args: string[]) => {
       libs: [libb.get(echoCommand)],
     });
     const exes = new thl.task.GroupTask({
-      dependencies: [
-        exe.createVariant({ variant: { name: 'debug', suffix: '-debug' }, flags: ['-O0', '-g'] }),
-        exe.createVariant({ variant: { name: 'release', suffix: '' }, flags: ['-O2'] }),
-      ],
+      dependencies: exe.createVariants([
+        { variant: { name: 'debug', suffix: '-debug' }, flags: ['-O0', '-g'] },
+        { variant: { name: 'release', suffix: '' }, flags: ['-O2'] },
+      ]),
     });
     await exes.runAll({ debug: undefined });
   }

@@ -49,6 +49,10 @@ export class LinkTask extends Task {
       variant: variantOptions.variant,
     });
   }
+
+  public override createVariants(variantOptions: Task.VariantOptions[]): LinkTask[] {
+    return variantOptions.map(item => this.createVariant(item));
+  }
 }
 
 export namespace LinkTask {

@@ -3,11 +3,15 @@
 #include "a/a.h"
 #include "a/generated.h"
 
-int a_func() {
-    std::cout << "a_func()" << std::endl;
+namespace a {
+
+  int func() {
+    std::cout << "a::func()" << std::endl;
 #ifdef FOO
     return 202 + generated();
 #else
     return 101 + generated();
 #endif
+  }
+
 }

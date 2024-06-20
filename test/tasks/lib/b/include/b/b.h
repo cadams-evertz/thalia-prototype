@@ -1,1 +1,5 @@
-int b_func();
+#pragma once
+
+namespace b {
+  int func();
+}

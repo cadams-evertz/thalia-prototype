@@ -1,1 +1,5 @@
-int a_func();
+#pragma once
+
+namespace a {
+  int func();
+}

@@ -2,7 +2,11 @@
 
 #include "a/a.h"
 
-int b_func() {
-    std::cout << "b_func()" << std::endl;
-    return a_func();
+namespace b {
+
+  int func() {
+    std::cout << "b::func()" << std::endl;
+    return a::func();
+  }
+
 }

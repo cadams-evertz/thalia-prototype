@@ -13,8 +13,9 @@ export class CompileTask extends thl_task_cpp_Task {
     const source = thl.task.FileProviderTask.ensure(options.source);
     const obj = source.file.append('.o');
     const libs = options.libs ?? [];
+    const combinedOptions = thl_task_cpp_Task.Options.combine(options, libs);
     super({
-      ...options,
+      ...combinedOptions,
       description: `Compiling ${source.file}...`,
       inputs: [source],
       outputs: [obj],

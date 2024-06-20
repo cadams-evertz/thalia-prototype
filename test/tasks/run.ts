@@ -24,24 +24,37 @@ thl.util.safeMain(async () => {
   thl.log.info('=== START ===');
 
   const p = new PrebuildTask();
+  // const aa = new thlWip.task.cpp.CompileTask({
+  //   source: 'a.cpp',
+  //   defines: ['FOO'],
+  //   includeDirs: ['include/a'],
+  //   echoCommand: true,
+  // });
   const a = new thlWip.task.cpp.StaticLibTask({
     sources: ['a.cpp', p],
     lib: 'liba.a',
     defines: ['FOO'],
-    includeDirs: ['include'],
+    includeDirs: ['include/a'],
+    echoCommand: true,
   });
   // Prebuilt
   // const a = new thlWip.task.cpp.StaticLibTask({
   //   lib: 'liba.a',
-  //   defines: ['NFOO'],
-  //   includeDirs: ['include'],
+  //   defines: ['FOO'],
+  //   includeDirs: ['include/a'],
   // });
-  const exe = new thlWip.task.cpp.LinkTask({
+  const b = new thlWip.task.cpp.StaticLibTask({
     sources: ['b.cpp'],
-    exe: 'a.out',
-    // defines: ['NFOO'],
-    // includeDirs: ['include'],
+    lib: 'libb.a',
+    includeDirs: ['include/b'],
     libs: [a],
+    echoCommand: true,
+  });
+  const exe = new thlWip.task.cpp.LinkTask({
+    sources: ['main.cpp'],
+    exe: 'a.out',
+    echoCommand: true,
+    libs: [b],
   });
   await exe.runAll({ debug: undefined });
 

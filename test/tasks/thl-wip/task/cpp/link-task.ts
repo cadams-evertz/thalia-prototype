@@ -13,11 +13,12 @@ export class LinkTask extends thl_task_cpp_Task {
   private readonly libs: thl_task_cpp_StaticLibTask[];
 
   constructor(options: LinkTask.Options) {
-    const sources = thl_task_cpp_CompileTask.ensureArray(options.sources, options);
-    const exe = thl.fs.Path.ensure(options.exe);
     const libs = options.libs ?? [];
+    const combinedOptions = thl_task_cpp_Task.Options.combine(options, libs);
+    const sources = thl_task_cpp_CompileTask.ensureArray(options.sources, combinedOptions);
+    const exe = thl.fs.Path.ensure(options.exe);
     super({
-      ...options,
+      ...combinedOptions,
       description: `Linking ${exe}...`,
       inputs: [...sources, ...libs],
       outputs: [exe],

@@ -36,6 +36,10 @@ export async function safeMain(main: () => void | Promise<void>): Promise<void> 
   }
 }
 
+export function unique<T>(items: T[]): T[] {
+  return items.reduce((prev, item) => (prev.includes(item) ? prev : [...prev, item]), [] as T[]);
+}
+
 export function* walkObject(
   obj: Record<string, any> | any[] | null | undefined,
   parentPath: string[] = [],

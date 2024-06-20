@@ -261,12 +261,12 @@ export function writeBinary(
   filename: Pathlike,
   data: Uint8Array,
   options?: smartOperation.Options<{ path: Path; data: Uint8Array }>,
-): void {
+): boolean {
   options = { ...{ if: thl_if.differentContentsBinary }, ...options };
 
   const filePath = Path.ensure(filename);
 
-  smartOperation(options, { path: filePath, data }, () => {
+  return smartOperation(options, { path: filePath, data }, () => {
     thl_log.action(`Saving ${filePath}...`);
     thl_log.setOptionsWhile({ action: false }, () => {
       dir.createForFile(filePath);
@@ -281,9 +281,9 @@ export function writeJson(
   options?: {
     crlfLineEndings?: boolean;
   } & smartOperation.Options<{ path: Path; data: string }>,
-): void {
+): boolean {
   const filePath = Path.ensure(filename);
-  writeText(filePath, JSON.stringify(data, undefined, '  '), options);
+  return writeText(filePath, JSON.stringify(data, undefined, '  '), options);
 }
 
 export function writeText(
@@ -292,7 +292,7 @@ export function writeText(
   options?: {
     crlfLineEndings?: boolean;
   } & smartOperation.Options<{ path: Path; data: string }>,
-): void {
+): boolean {
   options = { ...{ if: thl_if.differentContents }, ...options };
   const filePath = Path.ensure(filename);
 
@@ -300,7 +300,7 @@ export function writeText(
     data = data.replace(/\n/g, '\r\n');
   }
 
-  smartOperation(options, { path: filePath, data }, () => {
+  return smartOperation(options, { path: filePath, data }, () => {
     thl_log.action(`Saving ${filePath}...`);
     thl_log.setOptionsWhile({ action: false }, () => {
       dir.createForFile(filePath);

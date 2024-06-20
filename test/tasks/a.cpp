@@ -1,8 +1,11 @@
-#include "a.h"
+#include <iostream>
+
+#include "a/a.h"
 
 int generated();
 
-int func() {
+int a_func() {
+    std::cout << "a_func()" << std::endl;
 #ifdef FOO
     return 202 + generated();
 #else

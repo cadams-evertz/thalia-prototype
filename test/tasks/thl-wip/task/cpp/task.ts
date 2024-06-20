@@ -1,8 +1,8 @@
 import * as thl from 'thalia';
 
 export class Task extends thl.task.ChildProcessTask {
-  private readonly defines: string[];
-  private readonly includeDirs: thl.fs.Path[];
+  public readonly defines: string[];
+  public readonly includeDirs: thl.fs.Path[];
 
   constructor(options: Task.Options) {
     const defines = options.defines ?? [];
@@ -24,5 +24,26 @@ export namespace Task {
   export interface Options extends thl.task.ChildProcessTask.Options {
     defines?: string[];
     includeDirs?: thl.fs.Pathlike[];
+  }
+
+  export namespace Options {
+    export function combine(
+      options: {
+        defines?: string[];
+        includeDirs?: thl.fs.Pathlike[];
+      },
+      tasks: Task[],
+    ): {
+      defines?: string[];
+      includeDirs?: thl.fs.Pathlike[];
+    } {
+      return tasks.reduce((combinedOptions, task) => {
+        return {
+          ...combinedOptions,
+          defines: thl.util.unique([...(combinedOptions.defines ?? []), ...task.defines]),
+          includeDirs: thl.util.unique([...(combinedOptions.includeDirs ?? []), ...task.includeDirs]),
+        };
+      }, options);
+    }
   }
 }

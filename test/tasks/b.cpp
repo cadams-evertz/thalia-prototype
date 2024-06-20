@@ -1,8 +1,8 @@
 #include <iostream>
 
-#include "a.h"
+#include "a/a.h"
 
-int main() {
-    std::cout << func() << std::endl;
-    return 0;
+int b_func() {
+    std::cout << "b_func()" << std::endl;
+    return a_func();
 }

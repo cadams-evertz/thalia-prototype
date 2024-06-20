@@ -17,13 +17,16 @@ export class LinkTask extends Task {
     const combinedOptions = Task.Options.combine(options, libs);
     const sources = thl_task_cpp_CompileTask.ensureArray(options.sources, combinedOptions);
     const combinedOptions2 = Task.Options.combine(options, sources);
-    const exe = thl.fs.Path.ensure(options.exe);
+    let exe = thl.fs.Path.ensure(options.exe);
+    if (options.variant) {
+      exe = exe.append(options.variant.suffix);
+    }
     super({
       ...combinedOptions2,
-      description: `Linking ${exe}...`,
+      description: options.variant ? `Linking ${exe} (${options.variant.name})...` : `Linking ${exe}...`,
       inputs: [...sources, ...libs],
       outputs: [exe],
-      command: `g++ {{objs}} -o {{exe}} {{libs}}`,
+      command: `g++ {{flags}} {{objs}} -o {{exe}} {{libs}}`,
       substitutions: {
         exe: exe,
         objs: sources.map(source => source.outputs).flat(),
@@ -33,6 +36,18 @@ export class LinkTask extends Task {
     this.sources = sources;
     this.exe = exe;
     this.libs = libs;
+  }
+
+  public override createVariant(variantOptions: Task.VariantOptions): LinkTask {
+    const options = this.options;
+    return new LinkTask({
+      ...options,
+      sources: this.sources.map(source => source.createVariant(variantOptions)),
+      exe: this.exe,
+      libs: this.libs.map(lib => lib.createVariant(variantOptions)),
+      flags: [...variantOptions.flags, ...options.flags],
+      variant: variantOptions.variant,
+    });
   }
 }
 

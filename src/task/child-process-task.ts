@@ -1,24 +1,20 @@
-import * as thl_debug from '../debug';
 import * as thl_fs from '../fs';
 import * as thl_process from '../process';
 import * as thl_text from '../text';
 
-import {
-  FileProviderTask as thl_task_FileProviderTask,
-  FileProviderTasklike as thl_task_FileProviderTasklike,
-} from './file-provider-task';
+import { FileProviderTask, FileProviderTasklike } from './file-provider-task';
 
-export class ChildProcessTask extends thl_task_FileProviderTask {
+export class ChildProcessTask extends FileProviderTask {
   public readonly outputs: thl_fs.Path[];
 
-  private readonly alwaysRun: boolean;
-  private readonly command: string;
-  private readonly echoCommand: boolean;
-  private readonly inputs: thl_task_FileProviderTask[];
-  private readonly substitutions: Record<string, unknown>;
+  protected readonly alwaysRun: boolean;
+  protected readonly command: string;
+  protected readonly echoCommand: boolean;
+  protected readonly inputs: FileProviderTask[];
+  protected readonly substitutions: Record<string, unknown>;
 
   constructor(options: ChildProcessTask.Options) {
-    const inputs = (options.inputs ?? []).map(input => thl_task_FileProviderTask.ensure(input));
+    const inputs = (options.inputs ?? []).map(input => FileProviderTask.ensure(input));
     const outputs = (options.outputs ?? []).map(output => thl_fs.Path.ensure(output));
     super({
       ...options,
@@ -41,11 +37,20 @@ export class ChildProcessTask extends thl_task_FileProviderTask {
     }
 
     const substitutions = {
-      inputs: allInputs.map(input => (thl_task_FileProviderTask.is(input) ? input.files : input)).flat(),
+      inputs: allInputs.map(input => (FileProviderTask.is(input) ? input.files : input)).flat(),
       outputs: this.outputs,
       ...this.substitutions,
     };
-    const command = thl_text.expandTemplate(this.command, substitutions).replace(/  /g, ' ');
+    let command = thl_text.expandTemplate(this.command, substitutions);
+
+    while (true) {
+      const commandLen = command.length;
+      command = command.replace(/  /g, ' ');
+
+      if (commandLen === command.length) {
+        break;
+      }
+    }
 
     this.logDescription();
     await thl_process.executeAsync(command, { echoCommand: this.echoCommand });
@@ -53,11 +58,11 @@ export class ChildProcessTask extends thl_task_FileProviderTask {
 }
 
 export namespace ChildProcessTask {
-  export interface Options extends Omit<thl_task_FileProviderTask.Options, 'files'> {
+  export interface Options extends Omit<FileProviderTask.Options, 'files'> {
     alwaysRun?: boolean;
     command: string;
     echoCommand?: boolean;
-    inputs?: thl_task_FileProviderTasklike[];
+    inputs?: FileProviderTasklike[];
     outputs?: thl_fs.Pathlike[];
     substitutions?: Record<string, unknown>;
   }

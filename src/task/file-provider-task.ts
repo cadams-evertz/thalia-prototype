@@ -1,9 +1,8 @@
-import * as thl_debug from '../debug';
 import * as thl_fs from '../fs';
 
-import { Task as thl_task_Task } from './task';
+import { Task } from './task';
 
-export abstract class FileProviderTask extends thl_task_Task {
+export abstract class FileProviderTask extends Task {
   public get file(): thl_fs.Path {
     if (this.files.length !== 1) {
       throw new Error('Task does not have a single file');
@@ -27,7 +26,7 @@ export abstract class FileProviderTask extends thl_task_Task {
 }
 
 export namespace FileProviderTask {
-  export interface Options extends thl_task_Task.Options {
+  export interface Options extends Task.Options {
     files?: thl_fs.Pathlike[];
   }
 }

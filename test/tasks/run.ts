@@ -56,7 +56,13 @@ thl.util.safeMain(async () => {
     echoCommand: true,
     libs: [b],
   });
-  await exe.runAll({ debug: undefined });
+  const exes = new thl.task.GroupTask({
+    dependencies: [
+      exe.createVariant({ variant: { name: 'debug', suffix: '-debug' }, flags: ['-O0', '-g'] }),
+      exe.createVariant({ variant: { name: 'release', suffix: '' }, flags: ['-O2'] }),
+    ],
+  });
+  await exes.runAll({ debug: undefined });
 
   thl.log.info('=== END ===');
 });

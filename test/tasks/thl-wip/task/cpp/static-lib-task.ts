@@ -13,10 +13,18 @@ export class StaticLibTask extends Task {
     const combinedOptions = Task.Options.combine(options, libs);
     const sources = CompileTask.ensureArray(options.sources ?? [], combinedOptions);
     const combinedOptions2 = Task.Options.combine(options, sources);
-    const lib = thl.fs.Path.ensure(options.lib);
+    let lib = thl.fs.Path.ensure(options.lib);
+    if (options.variant) {
+      lib = lib.changeExtension(`${options.variant.suffix}.a`);
+    }
     super({
       ...combinedOptions2,
-      description: sources.length > 0 ? `Creating ${lib}...` : lib.absolute(),
+      description:
+        sources.length === 0
+          ? lib.absolute()
+          : options.variant
+          ? `Creating ${lib} (${options.variant.name})...`
+          : `Creating ${lib}...`,
       inputs: [...sources, ...libs],
       outputs: [lib],
       command: `ar rs {{lib}} {{objs}}`,
@@ -35,6 +43,18 @@ export class StaticLibTask extends Task {
       `-L${this.lib.dirPath().absolute()} -l${this.lib.basename('.a').slice(3)}`,
       ...this.libs.map(lib => lib.asCompilerOptions()),
     ].join(' ');
+  }
+
+  public override createVariant(variantOptions: Task.VariantOptions): StaticLibTask {
+    const options = this.options;
+    return new StaticLibTask({
+      ...options,
+      sources: this.sources.map(source => source.createVariant(variantOptions)),
+      lib: this.lib,
+      libs: this.libs.map(lib => lib.createVariant(variantOptions)),
+      flags: [...variantOptions.flags, ...options.flags],
+      variant: variantOptions.variant,
+    });
   }
 }
 

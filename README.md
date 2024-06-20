@@ -9,4 +9,4 @@ TODO
 - Unit tests
 
 - C++
-  - Generate C++ deps
+  - Move out of wip

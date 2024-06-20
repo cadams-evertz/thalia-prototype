@@ -16,8 +16,12 @@ export abstract class FileProviderTask extends Task {
     this.files = thl_fs.Path.ensureArray(options.files ?? []);
   }
 
-  public static ensure(value: thl_fs.Pathlike | FileProviderTask): FileProviderTask {
+  public static ensure(value: FileProviderTasklike): FileProviderTask {
     return FileProviderTask.is(value) ? value : new StaticFileTask({ description: `${value}`, files: [value] });
+  }
+
+  public static ensureArray(values: FileProviderTasklike[]): FileProviderTask[] {
+    return values.map(value => FileProviderTask.ensure(value));
   }
 
   public static is(value: unknown): value is FileProviderTask {

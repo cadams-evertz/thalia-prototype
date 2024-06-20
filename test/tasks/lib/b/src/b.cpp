@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "a/a.h"
+#include "b/b.h"
 
 namespace b {
 

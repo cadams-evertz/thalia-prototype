@@ -1,5 +1,7 @@
 import * as thl from 'thalia';
 
+import { determineDeps } from './determine-deps';
+
 export abstract class Task extends thl.task.ChildProcessTask {
   public readonly defines: string[];
   public readonly flags: string[];
@@ -23,12 +25,21 @@ export abstract class Task extends thl.task.ChildProcessTask {
     const defines = options.defines ?? [];
     const flags = options.flags ?? [];
     const includeDirs = thl.fs.Path.ensureArray(options.includeDirs ?? []);
+    const defineFlags = defines.map(define => `-D${define}`);
+    const includeFlags = includeDirs.map(includeDir => `-I${includeDir}`);
+    const innerDeps = determineDeps(
+      thl.task.FileProviderTask.ensureArray(options.inputs)
+        .map(task => task.files)
+        .flat(),
+      [...defineFlags, ...includeFlags],
+    );
     super({
       ...options,
+      inputs: [...options.inputs, ...innerDeps],
       substitutions: {
-        defines: defines.map(define => `-D${define}`),
+        defines: defineFlags,
         flags,
-        includes: includeDirs.map(includeDir => `-I${includeDir}`),
+        includes: includeFlags,
         ...options.substitutions,
       },
     });

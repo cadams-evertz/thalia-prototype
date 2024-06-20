@@ -43,10 +43,6 @@ export class CompileTask extends thl_task_cpp_Task {
   public static is(value: unknown): value is CompileTask {
     return value instanceof CompileTask;
   }
-
-  public override repr(): thl.debug.Repr {
-    return new thl.debug.Repr('cpp.CompileTask', { source: this.source.repr(), obj: this.obj.absolute() });
-  }
 }
 
 export namespace CompileTask {

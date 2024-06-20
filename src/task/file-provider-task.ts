@@ -44,9 +44,6 @@ export class StaticFileTask extends FileProviderTask {
   }
 
   public async run(): Promise<void> {}
-  public repr(): thl_debug.Repr {
-    return new thl_debug.Repr('StaticFileTask2', { files: this.files });
-  }
 }
 
 export namespace StaticFileTask {

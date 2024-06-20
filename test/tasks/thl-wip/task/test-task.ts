@@ -10,10 +10,6 @@ export class TestTask extends thl.task.Task {
     this.fail = !!options.fail;
   }
 
-  public override repr(): thl.debug.Repr {
-    return new thl.debug.Repr('TestTask', { durationMs: this.durationMs, fail: this.fail });
-  }
-
   public override async run(): Promise<void> {
     console.log(`${this.description}: START`);
     await thl.util.asyncTimeout(this.durationMs);

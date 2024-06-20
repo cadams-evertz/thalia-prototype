@@ -56,7 +56,9 @@ export class TaskRunner {
 
   private add(...tasks: thl_task_Task[]): void {
     for (const task of tasks) {
-      this.add(...task.dependencies);
+      if (task.dependencies) {
+        this.add(...task.dependencies);
+      }
 
       if (!this.remainingTasks.has(task) && task.status !== 'complete') {
         this.debugLog(`Add`, task);

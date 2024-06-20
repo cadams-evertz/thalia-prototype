@@ -50,10 +50,6 @@ export class ChildProcessTask extends thl_task_FileProviderTask {
     this.logDescription();
     await thl_process.executeAsync(command, { echoCommand: this.echoCommand });
   }
-
-  public override repr(): thl_debug.Repr {
-    return new thl_debug.Repr('ChildProcessTask', { inputs: this.inputs, outputs: this.outputs });
-  }
 }
 
 export namespace ChildProcessTask {

@@ -1,16 +1,31 @@
 import * as thl_util from '../util';
 
 export class Repr {
-  private readonly json: Record<string, any>;
-
-  constructor(name: string, values: Record<string, unknown>) {
-    this.json = { [`!!${name}`]: JSON.parse(JSON.stringify(values)) };
-
+  private constructor(private readonly json: Record<string, any>) {
     for (const entry of thl_util.walkObject(this.json)) {
       if (entry.value.repr) {
         entry.value = entry.value.repr().json;
+      } else if (entry.value?._absolute) {
+        // Clean up `Path` objects
+        entry.value = entry.value._absolute;
+      } else if (entry.key.startsWith('_')) {
+        entry.delete();
       }
     }
+  }
+
+  public static create(name: string, values: Record<string, unknown>): Repr {
+    return new Repr({ [`!!${name}`]: JSON.parse(JSON.stringify(values)) });
+  }
+
+  public static fromObject(object: any, filter?: (propertyName: string) => boolean): Repr {
+    const propertyNames = Object.keys(object).filter(
+      key => object.hasOwnProperty(key) && !key.startsWith('_') && (!filter || filter(key)),
+    );
+    const properties = Object.fromEntries(
+      propertyNames.map(propertyName => [propertyName, JSON.parse(JSON.stringify(object?.[propertyName]))]),
+    );
+    return new Repr({ [`!!${object.constructor.name}`]: properties });
   }
 
   public toString(): string {

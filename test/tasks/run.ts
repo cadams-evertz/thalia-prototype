@@ -18,10 +18,6 @@ class PrebuildTask extends thl.task.FileProviderTask {
     this.logDescription();
     thl.fs.file.writeText(this.output, 'int generated() { return 123; }\n', { if: thl.if.differentContents });
   }
-
-  public override repr(): thl.debug.Repr {
-    return new thl.debug.Repr('PrebuildTask', { output: this.output });
-  }
 }
 
 async function main(): Promise<void> {

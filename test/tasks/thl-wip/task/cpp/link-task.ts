@@ -35,14 +35,6 @@ export class LinkTask extends thl_task_cpp_Task {
     this.exe = exe;
     this.libs = libs;
   }
-
-  public override repr(): thl.debug.Repr {
-    return new thl.debug.Repr('cpp.LinkTask', {
-      exe: this.exe.absolute(),
-      libs: this.libs,
-      sources: this.sources,
-    });
-  }
 }
 
 export namespace LinkTask {

@@ -39,10 +39,6 @@ export class StaticLibTask extends thl_task_cpp_Task {
   public asCompilerOptions(): string {
     return `-L${this.lib.dirPath().absolute()} -l${this.lib.basename('.a').slice(3)}`;
   }
-
-  public override repr(): thl.debug.Repr {
-    return new thl.debug.Repr('cpp.StaticLibTask', { sources: this.sources, lib: this.lib.absolute() });
-  }
 }
 
 export namespace StaticLibTask {

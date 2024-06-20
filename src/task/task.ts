@@ -45,8 +45,11 @@ export abstract class Task {
     });
   }
 
+  public repr(): thl_debug.Repr {
+    return thl_debug.Repr.fromObject(this);
+  }
+
   public abstract run(): Promise<void>;
-  public abstract repr(): thl_debug.Repr;
 
   protected logDescription(): void {
     if (this.description) {

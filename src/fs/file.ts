@@ -28,23 +28,6 @@ export function copy(
   });
 }
 
-export function delete_(potentialFilenames: ArrayOrSingle<Pathlike>, options?: smartOperation.Options<Path>): boolean {
-  options = { ...{ if: thl_if.exists }, ...options };
-
-  const filePaths = Path.ensureArray(potentialFilenames);
-  let executed = false;
-
-  for (const filePath of filePaths) {
-    executed =
-      smartOperation(options, filePath, () => {
-        thl_log.action(`Deleting ${filePath}...`);
-        fs.rmSync(filePath.absolute(), { force: true });
-      }) || executed;
-  }
-
-  return executed;
-}
-
 export function different(filename1: Pathlike, filename2: Pathlike): boolean {
   const filePath1 = Path.ensure(filename1);
   const filePath2 = Path.ensure(filename2);
@@ -255,6 +238,23 @@ export function rename(srcFilename: Pathlike, destFilename: Pathlike): void {
 
   thl_log.action(`Renaming ${srcFilePath} to ${destFilePath}...`);
   fs.renameSync(srcFilePath.absolute(), destFilePath.absolute());
+}
+
+export function remove(potentialFilenames: ArrayOrSingle<Pathlike>, options?: smartOperation.Options<Path>): boolean {
+  options = { ...{ if: thl_if.exists }, ...options };
+
+  const filePaths = Path.ensureArray(potentialFilenames);
+  let executed = false;
+
+  for (const filePath of filePaths) {
+    executed =
+      smartOperation(options, filePath, () => {
+        thl_log.action(`Removing ${filePath}...`);
+        fs.rmSync(filePath.absolute(), { force: true });
+      }) || executed;
+  }
+
+  return executed;
 }
 
 export function writeBinary(

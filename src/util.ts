@@ -8,6 +8,21 @@ export function isDefined<T>(value: T | null | undefined): value is T {
   return value !== undefined && value !== null;
 }
 
+export async function main(
+  innerMain: (args: string[]) => void | Promise<void>,
+  options?: { rethrow?: boolean },
+): Promise<void> {
+  try {
+    await innerMain(process.argv.slice(2));
+  } catch (error) {
+    thl_log.error(`${error}`);
+
+    if (options?.rethrow) {
+      throw error;
+    }
+  }
+}
+
 export function pushAllIfUnique<T>(array: T[], newItems: T[], equals?: (newItem: T, existingItem: T) => boolean): void {
   for (const newItem of newItems) {
     pushIfUnique(array, newItem, equals);
@@ -26,14 +41,6 @@ export function pushIfUnique<T>(array: T[], newItem: T, equals?: (newItem: T, ex
   }
 
   array.push(newItem);
-}
-
-export async function safeMain(main: () => void | Promise<void>): Promise<void> {
-  try {
-    await main();
-  } catch (error) {
-    thl_log.error(`${error}`);
-  }
 }
 
 export function unique<T>(items: T[]): T[] {

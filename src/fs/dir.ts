@@ -46,7 +46,16 @@ export function createForFile(filename: Pathlike, options?: smartOperation.Optio
   return create(filePath.dirPath(), options);
 }
 
-export function delete_(potentialDirnames: ArrayOrSingle<Pathlike>, options?: smartOperation.Options<Path>): boolean {
+export function getCurrent(): Path {
+  return new Path(process.cwd());
+}
+
+export function read(dirName: Pathlike): Path[] {
+  const dirPath = Path.ensure(dirName);
+  return fs.readdirSync(dirPath.absolute()).map(filename => new Path(filename, dirPath));
+}
+
+export function remove(potentialDirnames: ArrayOrSingle<Pathlike>, options?: smartOperation.Options<Path>): boolean {
   options = { ...{ if: thl_if.exists }, ...options };
 
   const dirPaths = Path.ensureArray(potentialDirnames);
@@ -55,7 +64,7 @@ export function delete_(potentialDirnames: ArrayOrSingle<Pathlike>, options?: sm
   for (const dirPath of dirPaths) {
     if (
       smartOperation(options, dirPath, () => {
-        thl_log.action(`Deleting ${dirPath}...`);
+        thl_log.action(`Removing ${dirPath}...`);
         fs.rmSync(dirPath.absolute(), { force: true, recursive: true });
       })
     ) {
@@ -64,15 +73,6 @@ export function delete_(potentialDirnames: ArrayOrSingle<Pathlike>, options?: sm
   }
 
   return executed;
-}
-
-export function getCurrent(): Path {
-  return new Path(process.cwd());
-}
-
-export function read(dirName: Pathlike): Path[] {
-  const dirPath = Path.ensure(dirName);
-  return fs.readdirSync(dirPath.absolute()).map(filename => new Path(filename, dirPath));
 }
 
 export function setCurrent(dirName: Pathlike): void {

@@ -2,11 +2,15 @@
 #!/bin/bash
 SCRIPT_DIR=$(dirname $(readlink -f $0))
 
-if [ "$1" == "--debug" ]; then
-  shift
-  ARGS=""
-else
-  ARGS="--swc"
-fi
+PRE_ARGS=""
+POST_ARGS=""
 
-node $SCRIPT_DIR/../../ts-node/dist/bin.js $ARGS $*
+for ARG in $*; do
+  if [ "$ARG" == "--type-check" ]; then
+    PRE_ARGS="$PRE_ARGS --swc"
+  else
+    POST_ARGS="$POST_ARGS $ARG"
+  fi
+done
+
+node $SCRIPT_DIR/../../ts-node/dist/bin.js $PRE_ARGS $POST_ARGS

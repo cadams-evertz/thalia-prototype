@@ -13,7 +13,7 @@ export class StaticLibTask extends Task {
     const combinedOptions = Task.Options.combine(options, libs);
     const sources = CompileTask.ensureArray(options.sources ?? [], combinedOptions);
     const combinedOptions2 = Task.Options.combine(options, sources);
-    let lib = thl.fs.Path.ensure(options.lib);
+    let lib = thl.task.BuildDir.asBuildPath(options.lib);
     if (options.variant) {
       lib = lib.changeExtension(`${options.variant.suffix}.a`);
     }

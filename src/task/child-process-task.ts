@@ -53,6 +53,11 @@ export class ChildProcessTask extends FileProviderTask {
     }
 
     this.logDescription();
+
+    for (const output of this.outputs) {
+      thl_fs.dir.createForFile(output);
+    }
+
     await thl_process.executeAsync(command, { echoCommand: this.echoCommand });
   }
 }

@@ -11,7 +11,9 @@ export class CompileTask extends Task {
 
   constructor(options: CompileTask.Options) {
     const source = thl.task.FileProviderTask.ensure(options.source);
-    const obj = source.file.append(options.variant ? `${options.variant.suffix}.o` : '.o');
+    const obj = thl.task.BuildDir.asBuildPath(
+      source.file.append(options.variant ? `${options.variant.suffix}.o` : '.o'),
+    );
     const libs = options.libs ?? [];
     const combinedOptions = Task.Options.combine(options, libs);
     super({

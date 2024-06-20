@@ -17,7 +17,7 @@ export class LinkTask extends Task {
     const combinedOptions = Task.Options.combine(options, libs);
     const sources = thl_task_cpp_CompileTask.ensureArray(options.sources, combinedOptions);
     const combinedOptions2 = Task.Options.combine(options, sources);
-    let exe = thl.fs.Path.ensure(options.exe);
+    let exe = thl.task.BuildDir.asBuildPath(options.exe);
     if (options.variant) {
       exe = exe.append(options.variant.suffix);
     }

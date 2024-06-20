@@ -27,9 +27,15 @@ async function main(): Promise<void> {
   const a = new thlWip.task.cpp.StaticLibTask({
     sources: ['a.cpp', p],
     lib: 'liba.a',
-    defines: ['NFOO'],
+    defines: ['FOO'],
     includeDirs: ['include'],
   });
+  // Prebuilt
+  // const a = new thlWip.task.cpp.StaticLibTask({
+  //   lib: 'liba.a',
+  //   defines: ['NFOO'],
+  //   includeDirs: ['include'],
+  // });
   const exe = new thlWip.task.cpp.LinkTask({
     sources: ['b.cpp'],
     exe: 'a.out',

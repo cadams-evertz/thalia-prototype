@@ -1,9 +1,6 @@
 import * as thl from 'thalia';
 
-import {
-  StaticLibTask as thl_task_cpp_StaticLibTask,
-  StaticLibTasklike as thl_task_cpp_StaticLibTasklike,
-} from './static-lib-task';
+import { StaticLibTask as thl_task_cpp_StaticLibTask } from './static-lib-task';
 import { Task as thl_task_cpp_Task } from './task';
 
 // @ts-ignore - `ensure()` override
@@ -15,7 +12,7 @@ export class CompileTask extends thl_task_cpp_Task {
   constructor(options: CompileTask.Options) {
     const source = thl.task.FileProviderTask.ensure(options.source);
     const obj = source.file.append('.o');
-    const libs = thl_task_cpp_StaticLibTask.ensureArray(options.libs ?? []);
+    const libs = options.libs ?? [];
     super({
       ...options,
       description: `Compiling ${source.file}...`,
@@ -48,7 +45,7 @@ export class CompileTask extends thl_task_cpp_Task {
 export namespace CompileTask {
   export interface Options extends Omit<thl_task_cpp_Task.Options, 'command' | 'description' | 'inputs' | 'outputs'> {
     source: thl.task.FileProviderTasklike;
-    libs?: thl_task_cpp_StaticLibTasklike[];
+    libs?: thl_task_cpp_StaticLibTask[];
   }
 }
 

@@ -28,14 +28,6 @@ export class StaticLibTask extends thl_task_cpp_Task {
     this.lib = lib;
   }
 
-  public static ensure(value: StaticLibTasklike): StaticLibTask {
-    return StaticLibTask.is(value) ? value : new StaticLibTask({ lib: value });
-  }
-
-  public static ensureArray(values: StaticLibTasklike[]): StaticLibTask[] {
-    return values.map(value => StaticLibTask.ensure(value));
-  }
-
   public asCompilerOptions(): string {
     return `-L${this.lib.dirPath().absolute()} -l${this.lib.basename('.a').slice(3)}`;
   }
@@ -47,5 +39,3 @@ export namespace StaticLibTask {
     lib: thl.fs.Pathlike;
   }
 }
-
-export type StaticLibTasklike = thl.fs.Pathlike | StaticLibTask;

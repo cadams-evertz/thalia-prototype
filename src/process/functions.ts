@@ -3,7 +3,8 @@ import * as os from 'os';
 
 import * as thl_fs from '../fs';
 import * as thl_log from '../log';
-import * as thl_process from '../process';
+
+import { ExitError } from './exit-error';
 
 export type ExecuteResult = { exitCode: number; output?: string };
 
@@ -34,7 +35,7 @@ export function execute(
   const exitCode = result.status ?? 0;
 
   if (exitCode !== 0 && (options?.exitOnError ?? true)) {
-    throw new thl_process.ExitError(`${command} failed`, exitCode);
+    throw new ExitError(`${command} failed`, exitCode);
   }
 
   return { exitCode, output: options?.captureOutput ? `${result.output[1]}` : undefined };
@@ -72,7 +73,7 @@ export async function executeAsync(
       }
 
       if (exitCode !== 0 && (options?.exitOnError ?? true)) {
-        reject(new thl_process.ExitError(`${command} failed`, exitCode));
+        reject(new ExitError(`${command} failed`, exitCode));
       } else {
         resolve({ exitCode, output });
       }

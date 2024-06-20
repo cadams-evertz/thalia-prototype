@@ -2,57 +2,54 @@ import * as fs from 'fs';
 
 import * as thl_if from '../if';
 import * as thl_log from '../log';
-import * as thl_fs_file from './file';
-import { Path as thl_fs_Path, Pathlike as thl_fs_Pathlike } from './Path';
+import * as file from './file';
+import { Path, Pathlike } from './Path';
 
 import { ArrayOrSingle, smartOperation } from '../internal';
 
-export function chmodRecursive(dirName: thl_fs_Pathlike, mode: fs.Mode | ((path: thl_fs_Path) => fs.Mode)): void {
+export function chmodRecursive(dirName: Pathlike, mode: fs.Mode | ((path: Path) => fs.Mode)): void {
   for (const path of walk(dirName, { includeDirectories: true })) {
-    thl_fs_file.chmod(path, typeof mode === 'function' ? mode(path) : mode);
+    file.chmod(path, typeof mode === 'function' ? mode(path) : mode);
   }
 }
 
 export function copy(
-  srcDirName: thl_fs_Pathlike,
-  destDirName: thl_fs_Pathlike,
-  options?: smartOperation.Options<{ source: thl_fs_Path; destination: thl_fs_Path }>,
+  srcDirName: Pathlike,
+  destDirName: Pathlike,
+  options?: smartOperation.Options<{ source: Path; destination: Path }>,
 ): boolean {
-  const srcDirPath = thl_fs_Path.ensure(srcDirName);
-  const destDirPath = thl_fs_Path.ensure(destDirName);
+  const srcDirPath = Path.ensure(srcDirName);
+  const destDirPath = Path.ensure(destDirName);
   let executed = false;
 
-  for (const srcFilePath of thl_fs_file.find(srcDirPath)) {
+  for (const srcFilePath of file.find(srcDirPath)) {
     const destFilePath = destDirPath.joinWith(srcFilePath.relativeTo(srcDirPath));
-    executed = thl_fs_file.copy(srcFilePath, destFilePath, options) || executed;
+    executed = file.copy(srcFilePath, destFilePath, options) || executed;
   }
 
   return executed;
 }
 
-export function create(dirName: thl_fs_Pathlike, options?: smartOperation.Options<thl_fs_Path>): boolean {
+export function create(dirName: Pathlike, options?: smartOperation.Options<Path>): boolean {
   options = { ...{ if: thl_if.doesNotExist }, ...options };
 
-  const dirPath = thl_fs_Path.ensure(dirName);
+  const dirPath = Path.ensure(dirName);
 
-  return smartOperation<thl_fs_Path>(options, dirPath, () => {
+  return smartOperation<Path>(options, dirPath, () => {
     thl_log.action(`Creating directory ${dirPath}...`);
     fs.mkdirSync(dirPath.absolute(), { recursive: true });
   });
 }
 
-export function createForFile(filename: thl_fs_Pathlike, options?: smartOperation.Options<thl_fs_Path>): boolean {
-  const filePath = thl_fs_Path.ensure(filename);
+export function createForFile(filename: Pathlike, options?: smartOperation.Options<Path>): boolean {
+  const filePath = Path.ensure(filename);
   return create(filePath.dirPath(), options);
 }
 
-export function delete_(
-  potentialDirnames: ArrayOrSingle<thl_fs_Pathlike>,
-  options?: smartOperation.Options<thl_fs_Path>,
-): boolean {
+export function delete_(potentialDirnames: ArrayOrSingle<Pathlike>, options?: smartOperation.Options<Path>): boolean {
   options = { ...{ if: thl_if.exists }, ...options };
 
-  const dirPaths = thl_fs_Path.ensureArray(potentialDirnames);
+  const dirPaths = Path.ensureArray(potentialDirnames);
   let executed = false;
 
   for (const dirPath of dirPaths) {
@@ -69,21 +66,21 @@ export function delete_(
   return executed;
 }
 
-export function getCurrent(): thl_fs_Path {
-  return new thl_fs_Path(process.cwd());
+export function getCurrent(): Path {
+  return new Path(process.cwd());
 }
 
-export function read(dirName: thl_fs_Pathlike): thl_fs_Path[] {
-  const dirPath = thl_fs_Path.ensure(dirName);
-  return fs.readdirSync(dirPath.absolute()).map(filename => new thl_fs_Path(filename, dirPath));
+export function read(dirName: Pathlike): Path[] {
+  const dirPath = Path.ensure(dirName);
+  return fs.readdirSync(dirPath.absolute()).map(filename => new Path(filename, dirPath));
 }
 
-export function setCurrent(dirName: thl_fs_Pathlike): void {
-  const dirPath = thl_fs_Path.ensure(dirName);
+export function setCurrent(dirName: Pathlike): void {
+  const dirPath = Path.ensure(dirName);
   process.chdir(dirPath.absolute());
 }
 
-export function setCurrentWhile(dirName: thl_fs_Pathlike, work: () => void): void {
+export function setCurrentWhile(dirName: Pathlike, work: () => void): void {
   const oldCurrent = getCurrent();
   try {
     setCurrent(dirName);
@@ -93,8 +90,8 @@ export function setCurrentWhile(dirName: thl_fs_Pathlike, work: () => void): voi
   }
 }
 
-export function* walk(dirName: thl_fs_Pathlike, options?: { includeDirectories?: boolean }): Generator<thl_fs_Path> {
-  const dirPath = thl_fs_Path.ensure(dirName);
+export function* walk(dirName: Pathlike, options?: { includeDirectories?: boolean }): Generator<Path> {
+  const dirPath = Path.ensure(dirName);
   const dir = fs.opendirSync(dirPath.absolute());
 
   while (true) {

@@ -1,8 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import * as thl_fs_dir from './dir';
 import * as thl_util from '../util';
+
+import * as dir from './dir';
 
 import { ensureArray, ArrayOrSingle } from '../internal';
 
@@ -92,7 +93,7 @@ export class Path {
   }
 
   public relativeToCurrent(): string {
-    return this.relativeTo(thl_fs_dir.getCurrent());
+    return this.relativeTo(dir.getCurrent());
   }
 
   public static replaceRelative(text: string, options?: { relativeTo?: Pathlike }): string {
@@ -134,7 +135,7 @@ export class Path {
   }
 
   private resolve(filename: string, relativeTo?: Path): string {
-    return path.isAbsolute(filename) ? filename : (relativeTo ?? thl_fs_dir.getCurrent()).joinWith(filename).absolute();
+    return path.isAbsolute(filename) ? filename : (relativeTo ?? dir.getCurrent()).joinWith(filename).absolute();
   }
 }
 

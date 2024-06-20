@@ -1,8 +1,7 @@
 #include <iostream>
 
 #include "a/a.h"
-
-int generated();
+#include "a/generated.h"
 
 int a_func() {
     std::cout << "a_func()" << std::endl;

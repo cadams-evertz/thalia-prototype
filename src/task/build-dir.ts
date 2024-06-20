@@ -10,6 +10,10 @@ export class BuildDir {
   }
 
   public static asBuildPath(path: thl_fs.Pathlike): thl_fs.Path {
+    if (!BuildDir.buildDir) {
+      throw new Error('Build dir not set');
+    }
+
     path = thl_fs.Path.ensure(path);
 
     const pathAbs = path.absolute();

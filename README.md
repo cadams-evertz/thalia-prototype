@@ -8,4 +8,6 @@ TODO
 - tsconfig requirements?
 - Unit tests
 
-- Input/output paths correct for imported tasks from subdirectories?
+- C++
+  - Build if compiler options change
+  - Generate C++ deps

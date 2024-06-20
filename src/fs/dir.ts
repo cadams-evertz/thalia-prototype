@@ -80,11 +80,11 @@ export function setCurrent(dirName: Pathlike): void {
   process.chdir(dirPath.absolute());
 }
 
-export function setCurrentWhile(dirName: Pathlike, work: () => void): void {
+export function setCurrentWhile<T>(dirName: Pathlike, work: () => T): T {
   const oldCurrent = getCurrent();
   try {
     setCurrent(dirName);
-    work();
+    return work();
   } finally {
     setCurrent(oldCurrent);
   }

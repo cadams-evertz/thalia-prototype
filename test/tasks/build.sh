@@ -8,4 +8,4 @@ if [ ! -e $SCRIPT_DIR/node_modules/thalia ]; then
   npm --no-audit --no-fund i
 fi
 
-$SCRIPT_DIR/node_modules/thalia/bin/fast-ts-node.sh run.ts $*
+$SCRIPT_DIR/node_modules/thalia/bin/fast-ts-node.sh build.ts $*

@@ -1,4 +1,4 @@
-import * as thl_log from './log';
+import * as thl_log from '../log';
 
 export async function asyncTimeout(ms: number): Promise<void> {
   return new Promise<void>(resolve => setTimeout(resolve, ms));

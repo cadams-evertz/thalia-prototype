@@ -1,6 +1,6 @@
 import 'jasmine';
 
-import { isDefined, pushAllIfUnique, pushIfUnique } from './util';
+import { isDefined, pushAllIfUnique, pushIfUnique } from './functions';
 
 it('isDefined', () => {
   expect(isDefined(undefined)).toBeFalse();

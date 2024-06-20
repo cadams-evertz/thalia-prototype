@@ -28,7 +28,7 @@ export abstract class Task extends thl.task.ChildProcessTask {
       substitutions: {
         defines: defines.map(define => `-D${define}`),
         flags,
-        includes: includeDirs.map(includeDir => `-I${thl.fs.Path.ensure(includeDir)}`),
+        includes: includeDirs.map(includeDir => `-I${includeDir}`),
         ...options.substitutions,
       },
     });

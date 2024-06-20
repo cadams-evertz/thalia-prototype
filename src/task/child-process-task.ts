@@ -33,11 +33,6 @@ export class ChildProcessTask extends FileProviderTask {
     FileProviderTask.confirmAllExists(this.inputs);
 
     const allInputs = this.inputs.map(input => input.files).flat();
-
-    if (!this.alwaysRun && !thl_fs.file.isNewer(allInputs, this.outputs)) {
-      return;
-    }
-
     const substitutions = {
       inputs: allInputs.map(input => (FileProviderTask.is(input) ? input.files : input)).flat(),
       outputs: this.outputs,
@@ -54,6 +49,13 @@ export class ChildProcessTask extends FileProviderTask {
       }
     }
 
+    const cmdFilename = this.outputs[0].append('.cmd');
+    const commandDifferent = cmdFilename.exists() ? thl_fs.file.readText(cmdFilename) !== command : true;
+
+    if (!this.alwaysRun && !thl_fs.file.isNewer(allInputs, this.outputs) && !commandDifferent) {
+      return;
+    }
+
     this.logDescription();
 
     for (const output of this.outputs) {
@@ -61,6 +63,8 @@ export class ChildProcessTask extends FileProviderTask {
     }
 
     await thl_process.executeAsync(command, { echoCommand: this.echoCommand });
+
+    thl_fs.file.writeText(cmdFilename, command);
   }
 }
 

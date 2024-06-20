@@ -9,5 +9,4 @@ TODO
 - Unit tests
 
 - C++
-  - Build if compiler options change
   - Generate C++ deps

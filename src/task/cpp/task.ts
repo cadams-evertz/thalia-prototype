@@ -1,11 +1,13 @@
-import * as thl from 'thalia';
+import * as thl_fs from '../../fs';
+import * as thl_task from '..';
+import * as thl_util from '../../util';
 
 import { determineDeps } from './determine-deps';
 
-export abstract class Task extends thl.task.ChildProcessTask {
+export abstract class Task extends thl_task.ChildProcessTask {
   public readonly defines: string[];
   public readonly flags: string[];
-  public readonly includeDirs: thl.fs.Path[];
+  public readonly includeDirs: thl_fs.Path[];
 
   protected get options(): Task.Options {
     return {
@@ -24,18 +26,19 @@ export abstract class Task extends thl.task.ChildProcessTask {
   constructor(options: Task.Options) {
     const defines = options.defines ?? [];
     const flags = options.flags ?? [];
-    const includeDirs = thl.fs.Path.ensureArray(options.includeDirs ?? []);
+    const includeDirs = thl_fs.Path.ensureArray(options.includeDirs ?? []);
     const defineFlags = defines.map(define => `-D${define}`);
     const includeFlags = includeDirs.map(includeDir => `-I${includeDir}`);
+    const inputs = options.inputs ?? [];
     const innerDeps = determineDeps(
-      thl.task.FileProviderTask.ensureArray(options.inputs)
+      thl_task.FileProviderTask.ensureArray(inputs)
         .map(task => task.files)
         .flat(),
       [...defineFlags, ...includeFlags],
     );
     super({
       ...options,
-      inputs: [...options.inputs, ...innerDeps],
+      inputs: [...inputs, ...innerDeps],
       substitutions: {
         defines: defineFlags,
         flags,
@@ -53,10 +56,10 @@ export abstract class Task extends thl.task.ChildProcessTask {
 }
 
 export namespace Task {
-  export interface Options extends thl.task.ChildProcessTask.Options {
+  export interface Options extends thl_task.ChildProcessTask.Options {
     defines?: string[];
     flags?: string[];
-    includeDirs?: thl.fs.Pathlike[];
+    includeDirs?: thl_fs.Pathlike[];
     variant?: Variant;
   }
 
@@ -64,18 +67,18 @@ export namespace Task {
     export function combine(
       options: {
         defines?: string[];
-        includeDirs?: thl.fs.Pathlike[];
+        includeDirs?: thl_fs.Pathlike[];
       },
       tasks: Task[],
     ): {
       defines?: string[];
-      includeDirs?: thl.fs.Pathlike[];
+      includeDirs?: thl_fs.Pathlike[];
     } {
       return tasks.reduce((combinedOptions, task) => {
         return {
           ...combinedOptions,
-          defines: thl.util.unique([...(combinedOptions.defines ?? []), ...task.defines]),
-          includeDirs: thl.util.unique([...(combinedOptions.includeDirs ?? []), ...task.includeDirs]),
+          defines: thl_util.unique([...(combinedOptions.defines ?? []), ...task.defines]),
+          includeDirs: thl_util.unique([...(combinedOptions.includeDirs ?? []), ...task.includeDirs]),
         };
       }, options);
     }

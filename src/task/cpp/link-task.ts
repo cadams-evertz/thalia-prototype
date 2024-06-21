@@ -1,4 +1,5 @@
-import * as thl from 'thalia';
+import * as thl_fs from '../../fs';
+import * as thl_task from '..';
 
 import {
   CompileTask as thl_task_cpp_CompileTask,
@@ -9,7 +10,7 @@ import { StaticLibTask } from './static-lib-task';
 
 export class LinkTask extends Task {
   private readonly sources: thl_task_cpp_CompileTask[];
-  private readonly exe: thl.fs.Path;
+  private readonly exe: thl_fs.Path;
   private readonly libs: StaticLibTask[];
 
   constructor(options: LinkTask.Options) {
@@ -17,7 +18,7 @@ export class LinkTask extends Task {
     const combinedOptions = Task.Options.combine(options, libs);
     const sources = thl_task_cpp_CompileTask.ensureArray(options.sources, combinedOptions);
     const combinedOptions2 = Task.Options.combine(options, sources);
-    let exe = thl.task.BuildDir.asBuildPath(options.exe);
+    let exe = thl_task.BuildDir.asBuildPath(options.exe);
     if (options.variant) {
       exe = exe.append(options.variant.suffix);
     }
@@ -45,7 +46,7 @@ export class LinkTask extends Task {
       sources: this.sources.map(source => source.createVariant(variantOptions)),
       exe: this.exe,
       libs: this.libs.map(lib => lib.createVariant(variantOptions)),
-      flags: [...variantOptions.flags, ...options.flags],
+      flags: [...variantOptions.flags, ...(options.flags ?? [])],
       variant: variantOptions.variant,
     });
   }
@@ -58,7 +59,7 @@ export class LinkTask extends Task {
 export namespace LinkTask {
   export interface Options extends Omit<Task.Options, 'command' | 'description' | 'inputs' | 'outputs'> {
     sources: thl_task_cpp_CompileTasklike[];
-    exe: thl.fs.Pathlike;
+    exe: thl_fs.Pathlike;
     libs?: StaticLibTask[];
   }
 }

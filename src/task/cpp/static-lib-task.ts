@@ -1,11 +1,12 @@
-import * as thl from 'thalia';
+import * as thl_fs from '../../fs';
+import * as thl_task from '..';
 
 import { CompileTask, CompileTasklike } from './compile-task';
 import { Task } from './task';
 
 export class StaticLibTask extends Task {
   private readonly sources: CompileTask[];
-  private readonly lib: thl.fs.Path;
+  private readonly lib: thl_fs.Path;
   private readonly libs: StaticLibTask[];
 
   constructor(options: StaticLibTask.Options) {
@@ -13,7 +14,7 @@ export class StaticLibTask extends Task {
     const combinedOptions = Task.Options.combine(options, libs);
     const sources = CompileTask.ensureArray(options.sources ?? [], combinedOptions);
     const combinedOptions2 = Task.Options.combine(options, sources);
-    let lib = thl.task.BuildDir.asBuildPath(options.lib);
+    let lib = thl_task.BuildDir.asBuildPath(options.lib);
     if (options.variant) {
       lib = lib.changeExtension(`${options.variant.suffix}.a`);
     }
@@ -52,7 +53,7 @@ export class StaticLibTask extends Task {
       sources: this.sources.map(source => source.createVariant(variantOptions)),
       lib: this.lib,
       libs: this.libs.map(lib => lib.createVariant(variantOptions)),
-      flags: [...variantOptions.flags, ...options.flags],
+      flags: [...variantOptions.flags, ...(options.flags ?? [])],
       variant: variantOptions.variant,
     });
   }
@@ -65,7 +66,7 @@ export class StaticLibTask extends Task {
 export namespace StaticLibTask {
   export interface Options extends Omit<Task.Options, 'command' | 'description' | 'inputs' | 'outputs'> {
     sources?: CompileTasklike[];
-    lib: thl.fs.Pathlike;
+    lib: thl_fs.Pathlike;
     libs?: StaticLibTask[];
   }
 }

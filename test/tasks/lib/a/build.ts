@@ -1,12 +1,10 @@
 import * as thl from 'thalia';
 
-import * as thlWip from '../../thl-wip';
-
 export const liba = new thl.util.Deferred((echoCommand: boolean) => {
   return thl.fs.dir.setCurrentWhile(__dirname, () => {
     const p = new PrebuildTask();
-    return new thlWip.task.cpp.StaticLibTask({
-      sources: ['src/a.cpp', p],
+    return new thl.task.cpp.StaticLibTask({
+      sources: [...thl.fs.file.find('src'), p],
       lib: 'liba.a',
       defines: ['FOO'],
       includeDirs: ['include'],

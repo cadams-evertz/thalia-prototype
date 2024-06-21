@@ -1,8 +1,6 @@
 import * as thl from 'thalia';
 
-import * as thlWip from './thl-wip';
-
-import { libb } from './lib/b/build';
+import { appx } from './app/x/build';
 
 thl.util.main(async (args: string[]) => {
   thl.log.info('=== START ===');
@@ -18,19 +16,7 @@ thl.util.main(async (args: string[]) => {
   }
 
   if (build) {
-    const exe = new thlWip.task.cpp.LinkTask({
-      sources: ['app/x/src/main.cpp'],
-      exe: 'app/x/x',
-      echoCommand,
-      libs: [libb.get(echoCommand)],
-    });
-    const exes = new thl.task.GroupTask({
-      dependencies: exe.createVariants([
-        { variant: { name: 'debug', suffix: '-debug' }, flags: ['-O0', '-g'] },
-        { variant: { name: 'release', suffix: '' }, flags: ['-O2'] },
-      ]),
-    });
-    await exes.runAll({ debug: undefined });
+    await appx.get(echoCommand).runAll({ debug: undefined });
   }
 
   thl.log.info('=== END ===');

@@ -1,4 +1,5 @@
 import * as thl_fs from '../fs';
+import * as thl_log from '../log';
 import * as thl_process from '../process';
 import * as thl_text from '../text';
 
@@ -64,7 +65,9 @@ export class ChildProcessTask extends FileProviderTask {
 
     await thl_process.executeAsync(command, { echoCommand: this.echoCommand });
 
-    thl_fs.file.writeText(cmdFilename, command);
+    thl_log.setOptionsWhile({ action: false }, () => {
+      thl_fs.file.writeText(cmdFilename, command);
+    });
   }
 }
 

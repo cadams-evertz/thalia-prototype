@@ -1,7 +1,7 @@
 import { Task } from './task';
 
-export class GroupTask extends Task {
-  constructor(options: GroupTask.Options) {
+export class GroupTask<T extends Task> extends Task {
+  constructor(options: GroupTask.Options<T>) {
     super({
       ...options,
       description: '',
@@ -12,7 +12,7 @@ export class GroupTask extends Task {
 }
 
 export namespace GroupTask {
-  export interface Options extends Omit<Task.Options, 'description'> {
-    dependencies: Task[];
+  export interface Options<T extends Task> extends Omit<Task.Options, 'description'> {
+    dependencies: T[];
   }
 }

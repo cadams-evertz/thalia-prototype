@@ -1,5 +1,7 @@
 import * as thl from 'thalia';
 
+// import * as thlWip from './thl-wip';
+
 import { appx } from './app/x/build';
 
 thl.util.main(async (args: string[]) => {
@@ -16,7 +18,13 @@ thl.util.main(async (args: string[]) => {
   }
 
   if (build) {
-    await appx.get(echoCommand).runAll({ debug: undefined });
+    const zip = new thl.task.pkg.ZipTask({
+      inputs: appx.get(echoCommand).dependencies,
+      output: 'test.zip',
+      rootDir: thl.task.BuildDir.buildDir,
+    });
+
+    await zip.runAll();
   }
 
   thl.log.info('=== END ===');

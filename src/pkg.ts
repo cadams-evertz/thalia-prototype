@@ -105,7 +105,7 @@ export function multipackage(options: MultipackageOptions): thl_fs.Path[] {
 
   if (options.zip) {
     const zipFilePath = outputDirPath.joinWith(`${debRootName}.zip`);
-    zip(zipFilePath, debFilesPath);
+    zip(zipFilePath, [debFilesPath]);
     packageFilePaths.push(zipFilePath);
     packageFilePaths.push(...checksum(zipFilePath, options));
   }
@@ -172,31 +172,25 @@ export async function unzip(zipFilename: thl_fs.Pathlike, extractDirName: thl_fs
 
 export async function zip(
   zipFilename: thl_fs.Pathlike,
-  dirName: thl_fs.Pathlike,
-  options?: smartOperation.Options<{ source: ArrayOrSingle<thl_fs.Path>; destination: thl_fs.Path }>,
+  inputFilenames: thl_fs.Pathlike[],
+  options?: smartOperation.Options<{ source: ArrayOrSingle<thl_fs.Path>; destination: thl_fs.Path }> & {
+    rootDir?: thl_fs.Pathlike;
+  },
 ): Promise<boolean> {
-  options = { ...{ if: thl_if.newer }, ...options };
+  const smartOpOptions = { ...{ if: thl_if.newer }, ...options };
 
   const zipFilePath = thl_fs.Path.ensure(zipFilename);
-  const dirPath = thl_fs.Path.ensure(dirName);
+  const inputPaths = thl_fs.Path.ensureArray(inputFilenames)
+    .map(inputFilename => (inputFilename.isDirectory() ? thl_fs.file.find(inputFilename) : inputFilename))
+    .flat();
+  const rootDir = options?.rootDir ? thl_fs.Path.ensure(options.rootDir) : undefined;
 
-  return asyncSmartOperation(options, { source: thl_fs.file.find(dirPath), destination: zipFilePath }, async () => {
-    const walk = (zip: JsZip, dirPath: thl_fs.Path) => {
-      for (const path of thl_fs.dir.read(dirPath)) {
-        if (path.isDirectory()) {
-          const zipped = zip.folder(path.relativeTo(dirPath));
-
-          if (zipped) {
-            walk(zipped, path);
-          }
-        } else {
-          zip.file(path.relativeTo(dirPath), thl_fs.file.readBinary(path));
-        }
-      }
-    };
-
+  return asyncSmartOperation(smartOpOptions, { source: inputPaths, destination: zipFilePath }, async () => {
     await createZip(zipFilePath, zip => {
-      walk(zip, dirPath);
+      for (const inputPath of inputPaths) {
+        const zipPath = rootDir ? inputPath.relativeTo(rootDir) : inputPath.absolute();
+        zip.file(zipPath, thl_fs.file.readBinary(inputPath));
+      }
     });
   });
 }

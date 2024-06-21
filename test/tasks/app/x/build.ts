@@ -11,7 +11,7 @@ export const appx = new thl.util.Deferred((echoCommand: boolean) => {
       libs: [libb.get(echoCommand)],
     });
 
-    return new thl.task.GroupTask({
+    return new thl.task.GroupTask<thl.task.FileProviderTask>({
       dependencies: exe.createVariants([
         { variant: { name: 'debug', suffix: '-debug' }, flags: ['-O0', '-g'] },
         { variant: { name: 'release', suffix: '' }, flags: ['-O2'] },

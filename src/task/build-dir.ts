@@ -1,7 +1,8 @@
 import * as thl_fs from '../fs';
 
 export class BuildDir {
-  private static buildDir: thl_fs.Path;
+  public static buildDir: thl_fs.Path;
+
   private static projectRoot: thl_fs.Path;
 
   public static set(projectRoot: thl_fs.Pathlike, buildSubDir: string): void {

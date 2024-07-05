@@ -224,8 +224,17 @@ export function readBinary(filename: Pathlike): Uint8Array {
   return new Uint8Array(read(filename));
 }
 
-export function readJson(filename: Pathlike): any {
-  return JSON.parse(readText(filename));
+export function readJson(filename: Pathlike, options?: { stripComments?: boolean }): any {
+  let text = readText(filename);
+
+  if (options?.stripComments) {
+    text = text
+      .split('\n')
+      .filter(line => !line.trimStart().startsWith('//'))
+      .join('\n');
+  }
+
+  return JSON.parse(text);
 }
 
 export function readText(filename: Pathlike): string {

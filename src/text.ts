@@ -18,3 +18,22 @@ export function expandTemplate(template: string, substitutions: Record<string, u
 export function removePrefix(text: string, prefix: string): string {
   return text.startsWith(prefix) ? text.substring(prefix.length) : text;
 }
+
+export function tabulate(rows: Record<any, any>[], columnPadding = 2): string[] {
+  const keyValueRows = rows.map(row => Object.entries(row).map(([key, value]) => [key, `${value}`]));
+  const columnWidths: Record<string, number> = {};
+
+  for (const keyValueRow of keyValueRows) {
+    for (const [key, value] of keyValueRow) {
+      const thisColumnWidth = value.length;
+      const maxColumnWidth = columnWidths[key];
+      if (!maxColumnWidth || thisColumnWidth > maxColumnWidth) {
+        columnWidths[key] = thisColumnWidth;
+      }
+    }
+  }
+
+  return keyValueRows.map(keyValueRow =>
+    keyValueRow.map(([key, value]) => value.padEnd(columnWidths[key] + columnPadding)).join(''),
+  );
+}

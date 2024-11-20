@@ -3,11 +3,12 @@ import * as fs from 'fs';
 import * as thl_crypto from '../crypto';
 import * as thl_if from '../if';
 import * as thl_log from '../log';
+import * as thl_util from '../util';
 
 import * as dir from './dir';
 import { Path, Pathlike } from './Path';
 
-import { ensureArray, smartOperation, ArrayOrSingle } from '../internal';
+import { smartOperation } from '../internal';
 
 export function copy(
   srcFilename: Pathlike,
@@ -34,7 +35,7 @@ export function different(filename1: Pathlike, filename2: Pathlike): boolean {
   return hasDifferentContents(filePath1, readText(filePath2));
 }
 
-export function find(filenames: ArrayOrSingle<Pathlike>, options?: { includeDirPaths?: boolean }): Path[] {
+export function find(filenames: thl_util.ArrayOrSingle<Pathlike>, options?: { includeDirPaths?: boolean }): Path[] {
   const filePaths = Path.ensureArray(filenames);
   return filePaths
     .map(filePath => {
@@ -100,7 +101,10 @@ export function hasDifferentContentsBinary(filename: Pathlike, checkContents: Ui
   }
 }
 
-export function isNewer(filenames1: ArrayOrSingle<Pathlike>, filenames2: ArrayOrSingle<Pathlike>): boolean {
+export function isNewer(
+  filenames1: thl_util.ArrayOrSingle<Pathlike>,
+  filenames2: thl_util.ArrayOrSingle<Pathlike>,
+): boolean {
   const filePaths1 = Path.ensureArray(filenames1);
   const filePaths2 = Path.ensureArray(filenames2);
   const newest1 = newest(filePaths1);
@@ -154,7 +158,7 @@ export function sha256sum(filename: Pathlike, options?: ChecksumOptions): string
 }
 
 export interface MulticopyOperation {
-  src: ArrayOrSingle<Pathlike>;
+  src: thl_util.ArrayOrSingle<Pathlike>;
   dest: Pathlike;
 }
 
@@ -167,7 +171,7 @@ export function multiCopy(
   for (const operation of operations) {
     const destPath = Path.ensure(operation.dest);
 
-    for (const sourceName of ensureArray(operation.src)) {
+    for (const sourceName of thl_util.ensureArray(operation.src)) {
       const srcPath = Path.ensure(sourceName);
 
       if (srcPath.isDirectory()) {
@@ -181,7 +185,7 @@ export function multiCopy(
   return executed;
 }
 
-export function newest(filenames: ArrayOrSingle<Pathlike>): Date | undefined {
+export function newest(filenames: thl_util.ArrayOrSingle<Pathlike>): Date | undefined {
   const filePaths = Path.ensureArray(filenames);
   const children = find(filePaths);
 
@@ -198,7 +202,7 @@ export function newest(filenames: ArrayOrSingle<Pathlike>): Date | undefined {
   }, undefined);
 }
 
-export function oldest(filenames: ArrayOrSingle<Pathlike>): Date | undefined {
+export function oldest(filenames: thl_util.ArrayOrSingle<Pathlike>): Date | undefined {
   const filePaths = Path.ensureArray(filenames);
   const children = find(filePaths);
 
@@ -249,7 +253,10 @@ export function rename(srcFilename: Pathlike, destFilename: Pathlike): void {
   fs.renameSync(srcFilePath.absolute(), destFilePath.absolute());
 }
 
-export function remove(potentialFilenames: ArrayOrSingle<Pathlike>, options?: smartOperation.Options<Path>): boolean {
+export function remove(
+  potentialFilenames: thl_util.ArrayOrSingle<Pathlike>,
+  options?: smartOperation.Options<Path>,
+): boolean {
   options = { ...{ if: thl_if.exists }, ...options };
 
   const filePaths = Path.ensureArray(potentialFilenames);

@@ -5,8 +5,6 @@ import * as thl_util from '../util';
 
 import * as dir from './dir';
 
-import { ensureArray, ArrayOrSingle } from '../internal';
-
 export class Path {
   private static readonly ABSOLUTE_PATH_REGEX = /(\/[a-zA-Z0-9_\-\.]+)+/;
   private static readonly HTTP_REGEX = /http(s)?:\/$/;
@@ -54,8 +52,8 @@ export class Path {
     }
   }
 
-  public static ensureArray(pathlikes: ArrayOrSingle<Pathlike>): Path[] {
-    pathlikes = ensureArray(pathlikes);
+  public static ensureArray(pathlikes: thl_util.ArrayOrSingle<Pathlike>): Path[] {
+    pathlikes = thl_util.ensureArray(pathlikes);
     return pathlikes.map(pathlike => Path.ensure(pathlike));
   }
 

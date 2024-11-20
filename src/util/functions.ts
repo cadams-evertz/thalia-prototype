@@ -1,7 +1,22 @@
 import * as thl_log from '../log';
+import { ArrayOrSingle } from './types';
 
 export async function asyncTimeout(ms: number): Promise<void> {
   return new Promise<void>(resolve => setTimeout(resolve, ms));
+}
+
+export function combineArrays<T>(arrays: Array<T[] | null | undefined>, options?: { unique?: boolean }): T[] {
+  let result = arrays.reduce((prev: T[], arr) => (arr ? prev.concat(arr) : prev), []);
+
+  if (options?.unique) {
+    result = unique(result);
+  }
+
+  return result;
+}
+
+export function ensureArray<T>(value: ArrayOrSingle<T> | null | undefined): T[] {
+  return !value ? [] : Array.isArray(value) ? value : [value];
 }
 
 export function isDefined<T>(value: T | null | undefined): value is T {

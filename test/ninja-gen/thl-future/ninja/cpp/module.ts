@@ -1,47 +1,33 @@
 import * as thl from 'thalia';
 
-import { explode, File, ModuleInfo } from '..';
+import { FilePair } from '..';
+import { ModuleInfo } from './module-info';
 
 export function module(dirName: thl.fs.Pathlike, config: ModuleConfig): ModuleInfo {
   const id = config.moduleName.replace(/[^A-Za-z0-9]/g, '_');
   const dirPath = thl.fs.Path.ensure(dirName);
-  const ninjaFilename = dirPath.joinWith('build.compact.ninja');
-  const targetsNinja = new File(ninjaFilename);
-  targetsNinja.define(`${id}.dir`, '$ninjaFileDir');
+  const ninja = new FilePair(dirPath);
 
-  targetsNinja.include(`\${${id}.dir}/../../thl-future/ninja/files/cpp.rules.ninja`);
+  ninja.define(`${id}.dir`, '${ninjaFileDir}');
+  // TODO - Real path once integrated into lib?
+  ninja.include(`\${${id}.dir}/../../thl-future/ninja/cpp/cpp.rules.ninja`);
+  ninja.include(config.includes);
+  ninja.include(
+    config.deps
+      ?.map(dep => dep.dirPath.joinWith('include.ninja').relativeTo(dirPath))
+      .map(depPath => `\${${id}.dir}/${depPath}`),
+  );
 
-  if (config.includes) {
-    for (const include of config.includes) {
-      targetsNinja.include(include);
-    }
-  }
+  const cflags = thl.util.combineArrays(
+    [config.cflags, [`-I\${${id}.dir}/include`], config.deps?.map(dep => dep.cflags).flat()],
+    { unique: true },
+  );
+  const lflags = thl.util.combineArrays([config.lflags, config.deps?.map(dep => dep.lflags).flat()], { unique: true });
 
-  if (config.deps) {
-    for (const dep of config.deps) {
-      const depPath = dep.dirPath.joinWith('build.compact.ninja').relativeTo(dirPath);
-      targetsNinja.include(`\${${id}.dir}/${depPath}`);
-    }
-  }
-
-  let cflags = [...(config.cflags ?? []), `-I\${${id}.dir}/include`];
-  let lflags = [...(config.lflags ?? [])];
-
-  if (config.deps) {
-    cflags.push(...config.deps.map(dep => dep.cflags).flat());
-    lflags.push(...config.deps.map(dep => dep.lflags).flat());
-  }
-
-  cflags = thl.util.unique(cflags);
-  lflags = thl.util.unique(lflags);
-
-  targetsNinja.define(`${id}.name`, config.moduleName);
-  targetsNinja.define(`${id}.out`, `\${${id}.dir}/build-out/${config.out}`);
-  targetsNinja.define(`${id}.cflags`, cflags.join(' '));
-
-  if (lflags.length > 0) {
-    targetsNinja.define(`${id}.lflags`, lflags.join(' '));
-  }
+  ninja.define(`${id}.name`, config.moduleName);
+  ninja.define(`${id}.out`, `\${${id}.dir}/build-out/${config.out}`);
+  ninja.define(`${id}.cflags`, cflags.join(' '));
+  ninja.define(`${id}.lflags`, lflags.join(' '));
 
   const srcs = thl.fs.file.find(`${dirPath}/src`).map(src => {
     const srcPath = thl.fs.Path.ensure(src);
@@ -52,7 +38,7 @@ export function module(dirName: thl.fs.Pathlike, config: ModuleConfig): ModuleIn
   });
   const objs = srcs.map(src => src.intermediate);
 
-  targetsNinja.build(
+  ninja.build(
     config.rule,
     [...objs, ...(config.deps ? config.deps.map(dep => `\${${dep.id}.out}`) : [])],
     [`\${${id}.out}`],
@@ -65,15 +51,14 @@ export function module(dirName: thl.fs.Pathlike, config: ModuleConfig): ModuleIn
   );
 
   for (const src of srcs) {
-    targetsNinja.build('cpp.compile', [src.filename], [src.intermediate], {
+    ninja.build('cpp.compile', [src.filename], [src.intermediate], {
       cflags: `\${${id}.cflags}`,
       moduleName: `\${${id}.name}`,
       displayIn: src.relative,
     });
   }
 
-  targetsNinja.write();
-  explode(ninjaFilename, dirPath.joinWith('build.ninja'));
+  ninja.write();
 
   return new ModuleInfo(id, dirPath, cflags, lflags);
 }

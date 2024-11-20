@@ -2,10 +2,12 @@ import * as fs from 'fs';
 
 import * as thl_if from '../if';
 import * as thl_log from '../log';
+import * as thl_util from '../util';
+
 import * as file from './file';
 import { Path, Pathlike } from './Path';
 
-import { ArrayOrSingle, smartOperation } from '../internal';
+import { smartOperation } from '../internal';
 
 export function chmodRecursive(dirName: Pathlike, mode: fs.Mode | ((path: Path) => fs.Mode)): void {
   for (const path of walk(dirName, { includeDirectories: true })) {
@@ -55,7 +57,10 @@ export function read(dirName: Pathlike): Path[] {
   return fs.readdirSync(dirPath.absolute()).map(filename => new Path(filename, dirPath));
 }
 
-export function remove(potentialDirnames: ArrayOrSingle<Pathlike>, options?: smartOperation.Options<Path>): boolean {
+export function remove(
+  potentialDirnames: thl_util.ArrayOrSingle<Pathlike>,
+  options?: smartOperation.Options<Path>,
+): boolean {
   options = { ...{ if: thl_if.exists }, ...options };
 
   const dirPaths = Path.ensureArray(potentialDirnames);

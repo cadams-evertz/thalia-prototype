@@ -1,10 +1,9 @@
 import * as thl_log from './log';
 import * as thl_process from './process';
+import * as thl_util from './util';
 
-import { ensureArray, ArrayOrSingle } from './internal';
-
-export function ensureInstalled(packageNames: ArrayOrSingle<string>): void {
-  packageNames = ensureArray(packageNames);
+export function ensureInstalled(packageNames: thl_util.ArrayOrSingle<string>): void {
+  packageNames = thl_util.ensureArray(packageNames);
 
   for (const packageName of packageNames) {
     thl_log.info(`Ensuring package ${packageName} is installed...`);

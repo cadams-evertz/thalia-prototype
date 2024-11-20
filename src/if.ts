@@ -1,5 +1,5 @@
 import * as thl_fs from './fs';
-import { ArrayOrSingle } from './internal';
+import * as thl_util from './util';
 
 export function always(): boolean {
   return true;
@@ -25,7 +25,7 @@ export function newer({
   source,
   destination,
 }: {
-  source: ArrayOrSingle<thl_fs.Path>;
+  source: thl_util.ArrayOrSingle<thl_fs.Path>;
   destination: thl_fs.Path;
 }): boolean {
   return thl_fs.file.isNewer(source, destination);

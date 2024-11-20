@@ -1,6 +1,42 @@
 import 'jasmine';
 
-import { isDefined, pushAllIfUnique, pushIfUnique } from './functions';
+import { combineArrays, ensureArray, isDefined, pushAllIfUnique, pushIfUnique } from './functions';
+
+it('combineArrays', () => {
+  expect(combineArrays([])).toEqual([]);
+  expect(combineArrays([undefined])).toEqual([]);
+  expect(
+    combineArrays([
+      [1, 2],
+      [3, 4],
+    ]),
+  ).toEqual([1, 2, 3, 4]);
+  expect(combineArrays([undefined, [1, 2], undefined, [3, 4], null])).toEqual([1, 2, 3, 4]);
+  expect(
+    combineArrays([
+      [1, 2, 3],
+      [3, 4],
+    ]),
+  ).toEqual([1, 2, 3, 3, 4]);
+  expect(
+    combineArrays(
+      [
+        [1, 2, 3],
+        [3, 4],
+      ],
+      { unique: true },
+    ),
+  ).toEqual([1, 2, 3, 4]);
+});
+
+it('ensureArray', () => {
+  expect(ensureArray(undefined)).toEqual([]);
+  expect(ensureArray(null)).toEqual([]);
+  expect(ensureArray([])).toEqual([]);
+  expect(ensureArray(1)).toEqual([1]);
+  expect(ensureArray([1])).toEqual([1]);
+  expect(ensureArray([1, 2, 3])).toEqual([1, 2, 3]);
+});
 
 it('isDefined', () => {
   expect(isDefined(undefined)).toBeFalse();

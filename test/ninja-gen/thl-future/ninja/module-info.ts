@@ -4,12 +4,7 @@ import { build, clean } from './functions';
 export class ModuleInfo {
   public readonly dirPath: thl.fs.Path;
 
-  constructor(
-    public readonly id: string,
-    dirPath: thl.fs.Pathlike,
-    public readonly cflags: string[],
-    public readonly lflags: string[],
-  ) {
+  constructor(public readonly id: string, dirPath: thl.fs.Pathlike) {
     this.dirPath = thl.fs.Path.ensure(dirPath);
   }
 

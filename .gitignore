@@ -1,5 +1,5 @@
 /dist/
 node_modules
 .ninja_log
-build*.ninja
+*.ninja
 build-out/

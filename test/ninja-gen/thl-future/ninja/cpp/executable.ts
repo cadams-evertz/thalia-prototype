@@ -1,8 +1,8 @@
 import * as thl from 'thalia';
 
-import { module } from './module';
 import { getItem } from '../../util';
-import { ModuleInfo } from '../module-info';
+import { module } from './module';
+import { ModuleInfo } from './module-info';
 
 export function executable(dirName: thl.fs.Pathlike, config: LibraryConfig): ModuleInfo {
   const id = config.moduleName.replace(/[^A-Za-z0-9]/g, '_');

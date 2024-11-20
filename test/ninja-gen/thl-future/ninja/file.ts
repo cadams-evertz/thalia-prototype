@@ -1,8 +1,9 @@
 import * as thl from 'thalia';
 
 export class File {
+  protected readonly filePath: thl.fs.Path;
+
   private readonly codeLines: string[] = [];
-  private readonly filePath: thl.fs.Path;
   private lastLineType: LineType = undefined;
 
   constructor(filename: thl.fs.Pathlike) {
@@ -29,9 +30,22 @@ export class File {
     this.codeLines.push(`${name} = ${value}`);
   }
 
-  public include(filename: thl.fs.Pathlike): void {
+  public include(filenames: thl.util.ArrayOrSingle<thl.fs.Pathlike> | undefined): void {
+    if (!filenames) {
+      return;
+    }
+
+    filenames = thl.util.ensureArray(filenames);
+
+    if (filenames.length === 0) {
+      return;
+    }
+
     this.addGap('include');
-    this.codeLines.push(`include ${filename}`);
+
+    for (const filename of filenames) {
+      this.codeLines.push(`include ${filename}`);
+    }
   }
 
   private addGap(lineType: LineType): void {

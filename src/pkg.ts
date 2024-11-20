@@ -7,7 +7,9 @@ import * as thl_if from './if';
 import * as thl_log from './log';
 import * as thl_platform from './platform';
 import * as thl_process from './process';
-import { ArrayOrSingle, asyncSmartOperation, smartOperation } from './internal';
+import * as thl_util from './util';
+
+import { asyncSmartOperation, smartOperation } from './internal';
 
 export async function createZip(zipFilename: thl_fs.Pathlike, arg: (zip: JsZip) => void): Promise<void> {
   const zipFilePath = thl_fs.Path.ensure(zipFilename);
@@ -116,7 +118,7 @@ export function multipackage(options: MultipackageOptions): thl_fs.Path[] {
 export function tar(
   tarFilename: thl_fs.Pathlike,
   dirName: thl_fs.Pathlike,
-  options?: smartOperation.Options<{ source: ArrayOrSingle<thl_fs.Path>; destination: thl_fs.Path }>,
+  options?: smartOperation.Options<{ source: thl_util.ArrayOrSingle<thl_fs.Path>; destination: thl_fs.Path }>,
 ): boolean {
   options = { ...{ if: thl_if.newer }, ...options };
 
@@ -173,7 +175,7 @@ export async function unzip(zipFilename: thl_fs.Pathlike, extractDirName: thl_fs
 export async function zip(
   zipFilename: thl_fs.Pathlike,
   inputFilenames: thl_fs.Pathlike[],
-  options?: smartOperation.Options<{ source: ArrayOrSingle<thl_fs.Path>; destination: thl_fs.Path }> & {
+  options?: smartOperation.Options<{ source: thl_util.ArrayOrSingle<thl_fs.Path>; destination: thl_fs.Path }> & {
     rootDir?: thl_fs.Pathlike;
   },
 ): Promise<boolean> {

@@ -9,9 +9,10 @@ export function library(dirName: thl.fs.Pathlike, config: LibraryConfig): Module
   const libName = config.libName ?? getItem(config.moduleName.split('/'), -1);
 
   return module(dirName, {
+    cflags: config.cflags,
     deps: config.deps,
     includes: config.includes,
-    lflags: `-L\${${id}.dir}/build-out -l${libName}`,
+    lflags: [...(config.lflags ?? []), `-L\${${id}.dir}/build-out`, `-l${libName}`],
     moduleName: config.moduleName,
     out: `lib${libName}.a`,
     rule: 'cpp.lib',
@@ -19,8 +20,10 @@ export function library(dirName: thl.fs.Pathlike, config: LibraryConfig): Module
 }
 
 interface LibraryConfig {
+  cflags?: string[];
   deps?: ModuleInfo[];
   includes?: string[];
-  moduleName: string;
+  lflags?: string[];
   libName?: string;
+  moduleName: string;
 }

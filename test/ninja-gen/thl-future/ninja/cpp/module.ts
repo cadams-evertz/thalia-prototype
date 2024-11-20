@@ -24,12 +24,12 @@ export function module(dirName: thl.fs.Pathlike, config: ModuleConfig): ModuleIn
     }
   }
 
-  let cflags = [`-I\${${id}.dir}/include`];
-  let lflags = config.lflags ? [config.lflags] : [];
+  let cflags = [...(config.cflags ?? []), `-I\${${id}.dir}/include`];
+  let lflags = [...(config.lflags ?? [])];
 
   if (config.deps) {
-    cflags.push(...config.deps.map(dep => `\${${dep.id}.cflags}`));
-    lflags.push(...config.deps.map(dep => `\${${dep.id}.lflags}`));
+    cflags.push(...config.deps.map(dep => dep.cflags).flat());
+    lflags.push(...config.deps.map(dep => dep.lflags).flat());
   }
 
   cflags = thl.util.unique(cflags);
@@ -75,13 +75,14 @@ export function module(dirName: thl.fs.Pathlike, config: ModuleConfig): ModuleIn
   targetsNinja.write();
   explode(ninjaFilename, dirPath.joinWith('build.ninja'));
 
-  return new ModuleInfo(id, dirPath);
+  return new ModuleInfo(id, dirPath, cflags, lflags);
 }
 
 export interface ModuleConfig {
+  cflags?: string[];
   deps?: ModuleInfo[];
   includes?: string[];
-  lflags?: string;
+  lflags?: string[];
   moduleName: string;
   out: string;
   rule: string;

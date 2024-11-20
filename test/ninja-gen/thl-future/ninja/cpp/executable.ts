@@ -9,8 +9,10 @@ export function executable(dirName: thl.fs.Pathlike, config: LibraryConfig): Mod
   const executableName = config.executableName ?? getItem(config.moduleName.split('/'), -1);
 
   return module(dirName, {
+    cflags: config.cflags,
     deps: config.deps,
     includes: config.includes,
+    lflags: config.lflags,
     moduleName: config.moduleName,
     out: executableName,
     rule: 'cpp.link',
@@ -18,8 +20,10 @@ export function executable(dirName: thl.fs.Pathlike, config: LibraryConfig): Mod
 }
 
 interface LibraryConfig {
+  cflags?: string[];
   deps?: ModuleInfo[];
   executableName?: string;
   includes?: string[];
+  lflags?: string[];
   moduleName: string;
 }

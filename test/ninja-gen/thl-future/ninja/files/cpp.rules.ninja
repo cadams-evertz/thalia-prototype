@@ -8,5 +8,5 @@ rule cpp.lib
   description = [$moduleName] Packaging library $displayOut...
 
 rule cpp.link
-  command = g++ $cflags $objs -o $out -Wl,-no_warn_duplicate_libraries $lflags
+  command = g++ $cflags $objs -o $out $lflags
   description = [$moduleName] Linking $displayOut...

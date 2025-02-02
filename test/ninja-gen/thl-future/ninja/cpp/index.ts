@@ -1,2 +1,2 @@
 export { executable } from './executable';
-export { library } from './library';
+export { library, library2 } from './library';

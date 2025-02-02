@@ -2,10 +2,9 @@ import * as thl from 'thalia';
 
 import { getItem } from '../../util';
 import { module } from './module';
-import { ModuleInfo } from './module-info';
+import { CppModuleInfo } from './cpp-module-info';
 
-export function executable(dirName: thl.fs.Pathlike, config: LibraryConfig): ModuleInfo {
-  const id = config.moduleName.replace(/[^A-Za-z0-9]/g, '_');
+export function executable(dirName: thl.fs.Pathlike, config: ExecutableConfig): CppModuleInfo {
   const executableName = config.executableName ?? getItem(config.moduleName.split('/'), -1);
 
   return module(dirName, {
@@ -19,9 +18,9 @@ export function executable(dirName: thl.fs.Pathlike, config: LibraryConfig): Mod
   });
 }
 
-interface LibraryConfig {
+interface ExecutableConfig {
   cflags?: string[];
-  deps?: ModuleInfo[];
+  deps?: CppModuleInfo[];
   executableName?: string;
   includes?: string[];
   lflags?: string[];

@@ -1,7 +1,7 @@
 import * as thl from 'thalia';
 
 export class File {
-  protected readonly filePath: thl.fs.Path;
+  public readonly filePath: thl.fs.Path;
 
   private readonly codeLines: string[] = [];
   private lastLineType: LineType = undefined;
@@ -9,7 +9,7 @@ export class File {
   constructor(filename: thl.fs.Pathlike) {
     this.filePath = thl.fs.Path.ensure(filename);
 
-    this.define('ninjaFileDir', this.filePath.dirPath());
+    this.define('ninjaFileDir', '.'); //this.filePath.dirPath());
     this.lastLineType = 'always';
   }
 
@@ -23,6 +23,14 @@ export class File {
         this.codeLines.push(`  ${key} = ${value}`);
       }
     }
+  }
+
+  public comment(lines: string[]): void {
+    for (const line of lines) {
+      this.codeLines.push(line ? `# ${line}` : '');
+    }
+
+    this.lastLineType = 'comment';
   }
 
   public define(name: string, value: unknown): void {
@@ -49,7 +57,11 @@ export class File {
   }
 
   private addGap(lineType: LineType): void {
-    if (this.lastLineType && (lineType === 'build' || this.lastLineType !== lineType)) {
+    if (
+      this.lastLineType &&
+      this.lastLineType !== 'comment' &&
+      (lineType === 'build' || this.lastLineType !== lineType)
+    ) {
       this.codeLines.push('');
     }
     this.lastLineType = lineType;
@@ -60,4 +72,4 @@ export class File {
   }
 }
 
-type LineType = 'always' | 'build' | 'define' | 'include' | undefined;
+type LineType = 'always' | 'build' | 'comment' | 'define' | 'include' | undefined;

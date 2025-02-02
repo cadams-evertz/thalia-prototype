@@ -1,11 +1,12 @@
 import * as thl from 'thalia';
 
 import { getItem } from '../../util';
-import { module } from './module';
-import { ModuleInfo } from './module-info';
+import { module, module2 } from './module';
+import { CppModuleInfo } from './cpp-module-info';
+import { sanitiseId, File } from '..';
 
-export function library(dirName: thl.fs.Pathlike, config: LibraryConfig): ModuleInfo {
-  const id = config.moduleName.replace(/[^A-Za-z0-9]/g, '_');
+export function library(dirName: thl.fs.Pathlike, config: LibraryConfig): CppModuleInfo {
+  const id = sanitiseId(config.moduleName);
   const libName = config.libName ?? getItem(config.moduleName.split('/'), -1);
 
   return module(dirName, {
@@ -19,9 +20,24 @@ export function library(dirName: thl.fs.Pathlike, config: LibraryConfig): Module
   });
 }
 
+export function library2(ninjaFile: File, dirName: thl.fs.Pathlike, config: LibraryConfig): CppModuleInfo {
+  const id = sanitiseId(config.moduleName);
+  const libName = config.libName ?? getItem(config.moduleName.split('/'), -1);
+
+  return module2(ninjaFile, dirName, {
+    cflags: config.cflags,
+    deps: config.deps,
+    includes: config.includes,
+    lflags: [...(config.lflags ?? []), `-L\${${id}.dir}/build-out`, `-l${libName}`],
+    moduleName: config.moduleName,
+    out: `lib${libName}.a`,
+    rule: 'cpp.lib',
+  });
+}
+
 interface LibraryConfig {
   cflags?: string[];
-  deps?: ModuleInfo[];
+  deps?: CppModuleInfo[];
   includes?: string[];
   lflags?: string[];
   libName?: string;

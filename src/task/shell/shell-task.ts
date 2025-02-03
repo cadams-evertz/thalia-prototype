@@ -1,38 +1,28 @@
 import * as thl_fs from '../../fs';
 import * as thl_process from '../../process';
+import * as thl_task from '..';
+import * as thl_util from '../../util';
 
-import { BuildDir } from '../build-dir';
-import { FilesProviderTask } from '../files-provider-task';
-import { Task } from '../task';
-import { TaskRunner } from '../task-runner';
-
-export class ShellTask extends FilesProviderTask<ShellTask.Options> {
-  private readonly _dependencies: Task[];
-  public get dependencies(): Task[] {
-    return this._dependencies;
-  }
-
+export class ShellTask extends thl_task.FilesProviderTask<ShellTask.Options> {
   private inputs: thl_fs.Path[] = [];
 
   constructor(options: ShellTask.Options) {
-    super(options);
-    this._dependencies = Task.filterArray(ShellTask.Options.getInputs(options));
+    const dependencies = thl_task.Task.filterArray(thl_util.ensureArray(options.input ?? options.inputs));
+    super(options, dependencies);
+    this.outputs = thl_task.BuildDir.asBuildPathArray(thl_util.ensureArray(options.output ?? options.outputs));
   }
 
   protected override prepare(): void {
-    this.inputs = FilesProviderTask.toPaths(ShellTask.Options.getInputs(this.options));
-    this.outputs = BuildDir.asBuildPathArray(ShellTask.Options.getOutputs(this.options));
+    this.inputs = thl_task.FilesProviderTask.toPaths(thl_util.ensureArray(this.options.input ?? this.options.inputs));
   }
 
   protected override needToRun(): boolean {
-    if (this.inputs.length === 0 || this.outputs.length === 0) {
-      return true;
-    } else {
-      return thl_fs.file.isNewer(this.inputs, this.outputs);
-    }
+    return this.inputs.length === 0 || this.outputs.length === 0
+      ? true
+      : thl_fs.file.isNewer(this.inputs, this.outputs);
   }
 
-  protected override async run(taskRunnerOptions?: TaskRunner.Options): Promise<void> {
+  protected override async run(taskRunnerOptions?: thl_task.TaskRunner.Options): Promise<void> {
     this.logDescription();
 
     for (const output of this.outputs) {
@@ -68,21 +58,11 @@ export class ShellTask extends FilesProviderTask<ShellTask.Options> {
 }
 
 export namespace ShellTask {
-  export interface Options extends Task.Options {
+  export interface Options extends thl_task.Task.Options {
     commands: string[];
-    input?: thl_fs.Pathlike | FilesProviderTask;
-    inputs?: (thl_fs.Pathlike | FilesProviderTask)[];
+    input?: thl_task.FilesProviderTasklike;
+    inputs?: thl_task.FilesProviderTasklike[];
     output?: thl_fs.Pathlike;
     outputs?: thl_fs.Pathlike[];
-  }
-
-  export namespace Options {
-    export function getInputs(options: Options): (thl_fs.Pathlike | FilesProviderTask)[] {
-      return options.input ? [options.input] : options.inputs ?? [];
-    }
-
-    export function getOutputs(options: Options): thl_fs.Pathlike[] {
-      return options.output ? [options.output] : options.outputs ?? [];
-    }
   }
 }

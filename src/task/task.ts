@@ -7,11 +7,7 @@ export abstract class Task<TOptions extends Task.Options = Task.Options> {
     return [...this.dependencies.map(dependency => dependency.allTasks).flat(), this];
   }
 
-  public get dependencies(): Task[] {
-    return [];
-  }
-
-  public get description(): string {
+  public get description(): string | undefined {
     return this.options.description;
   }
 
@@ -25,7 +21,7 @@ export abstract class Task<TOptions extends Task.Options = Task.Options> {
     return this._promise;
   }
 
-  constructor(protected readonly options: TOptions) {}
+  constructor(protected readonly options: TOptions, public readonly dependencies: Task[]) {}
 
   public static filterArray(items: (Task | unknown)[]): Task[] {
     return items.filter(input => input instanceof Task) as Task[];
@@ -75,7 +71,7 @@ export abstract class Task<TOptions extends Task.Options = Task.Options> {
 
 export namespace Task {
   export interface Options {
-    description: string;
+    description?: string;
   }
 
   export type Status = 'complete' | 'error' | 'pending' | 'running' | 'unchanged';

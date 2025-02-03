@@ -6,27 +6,22 @@ import { FilesProviderTask } from '../files-provider-task';
 import { Task } from '../task';
 import { TaskRunner } from '../task-runner';
 
-export class ShellTask extends FilesProviderTask {
+export class ShellTask extends FilesProviderTask<ShellTask.Options> {
   private readonly _dependencies: Task[];
   public get dependencies(): Task[] {
     return this._dependencies;
   }
 
-  public readonly outputs: thl_fs.Path[];
-
-  private readonly commands: string[];
-  private readonly inputs: thl_fs.Path[];
+  private inputs: thl_fs.Path[] = [];
 
   constructor(options: ShellTask.Options) {
     super(options);
+    this._dependencies = Task.filterArray(ShellTask.Options.getInputs(options));
+  }
 
-    const inputs = options.input ? [options.input] : options.inputs ?? [];
-    const outputs = options.output ? [options.output] : options.outputs ?? [];
-
-    this.commands = options.commands;
-    this.inputs = FilesProviderTask.toPaths(inputs);
-    this.outputs = BuildDir.asBuildPathArray(outputs);
-    this._dependencies = Task.filterArray(inputs);
+  protected override prepare(): void {
+    this.inputs = FilesProviderTask.toPaths(ShellTask.Options.getInputs(this.options));
+    this.outputs = BuildDir.asBuildPathArray(ShellTask.Options.getOutputs(this.options));
   }
 
   protected override needToRun(): boolean {
@@ -44,7 +39,7 @@ export class ShellTask extends FilesProviderTask {
       thl_fs.dir.createForFile(output);
     }
 
-    for (const command of this.commands) {
+    for (const command of this.options.commands) {
       const resolvedCommand = this.resolveCommand(
         this.resolveCommand(command, 'input', this.inputs),
         'output',
@@ -79,5 +74,15 @@ export namespace ShellTask {
     inputs?: (thl_fs.Pathlike | FilesProviderTask)[];
     output?: thl_fs.Pathlike;
     outputs?: thl_fs.Pathlike[];
+  }
+
+  export namespace Options {
+    export function getInputs(options: Options): (thl_fs.Pathlike | FilesProviderTask)[] {
+      return options.input ? [options.input] : options.inputs ?? [];
+    }
+
+    export function getOutputs(options: Options): thl_fs.Pathlike[] {
+      return options.output ? [options.output] : options.outputs ?? [];
+    }
   }
 }

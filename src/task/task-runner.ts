@@ -52,8 +52,6 @@ class TaskRunner {
         const runningTaskPromises = [...this.runningTasks].map(task => task.promise);
         const finished: thl_task_Task = await Promise_any(runningTaskPromises);
 
-        this.debugLog(`End`, finished);
-
         if (finished.status === 'error') {
           throw new Error(`Task '${finished.description}' finished with error status`);
         }
@@ -80,14 +78,20 @@ class TaskRunner {
       if (incompleteDependencies.length === 0) {
         this.remainingTasks.delete(task);
 
-        // @ts-ignore - Protected member access
-        if (task.needToRun()) {
-          this.debugLog(`Start`, task);
-          task.start(this.options);
-          this.runningTasks.add(task);
-        } else {
-          this.debugLog(`Unchanged`, task);
-        }
+        task.start(this.options, status => {
+          switch (status) {
+            case 'complete':
+              this.debugLog(`End`, task);
+              break;
+            case 'running':
+              this.debugLog(`Start`, task);
+              this.runningTasks.add(task);
+              break;
+            case 'unchanged':
+              this.debugLog(`Unchanged`, task);
+              break;
+          }
+        });
 
         return true;
       } else {

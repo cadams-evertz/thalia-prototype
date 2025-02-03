@@ -2,7 +2,7 @@ import * as thl_log from '../log';
 
 import { TaskRunner } from './task-runner';
 
-export abstract class Task {
+export abstract class Task<TOptions extends Task.Options = Task.Options> {
   public get allTasks(): Task[] {
     return [...this.dependencies.map(dependency => dependency.allTasks).flat(), this];
   }
@@ -11,15 +11,13 @@ export abstract class Task {
     return [];
   }
 
-  public readonly description: string;
+  public get description(): string {
+    return this.options.description;
+  }
 
   protected _status: Task.Status = 'pending';
   public get status(): Task.Status {
     return this._status;
-  }
-
-  constructor(options: Task.Options) {
-    this.description = options.description;
   }
 
   private _promise?: Promise<Task>;
@@ -27,31 +25,44 @@ export abstract class Task {
     return this._promise;
   }
 
+  constructor(protected readonly options: TOptions) {}
+
   public static filterArray(items: (Task | unknown)[]): Task[] {
     return items.filter(input => input instanceof Task) as Task[];
   }
 
-  public start(taskRunnerOptions?: TaskRunner.Options): void {
+  public start(
+    taskRunnerOptions: TaskRunner.Options | undefined,
+    statusChangedCallback: (status: Task.Status) => void,
+  ): void {
+    const setStatus = (status: Task.Status) => {
+      this._status = status;
+      statusChangedCallback(status);
+    };
+
+    this.prepare();
+
     if (!this.needToRun()) {
-      this._status = 'unchanged';
+      setStatus('unchanged');
     } else {
-      this._status = 'running';
+      setStatus('running');
 
       this._promise = new Promise<Task>(resolve => {
         this.run(taskRunnerOptions)
           .then(() => {
-            this._status = 'complete';
+            setStatus('complete');
             resolve(this);
           })
           .catch(error => {
             thl_log.error(error);
-            this._status = 'error';
+            setStatus('error');
             resolve(this);
           });
       });
     }
   }
 
+  protected prepare(): void {}
   protected abstract needToRun(): boolean;
   protected abstract run(taskRunnerOptions?: TaskRunner.Options): Promise<void>;
 

@@ -1,20 +1,19 @@
 import * as thl_fs from '../../fs';
-import * as thl_log from '../../log';
 import * as thl_process from '../../process';
 import * as thl_task from '..';
 import * as thl_text from '../../text';
 import * as thl_util from '../../util';
 
-export class ShellTask extends thl_task.FilesProviderTask<ShellTask.Options> {
-  private cmdFilename: thl_fs.Path;
+export class ShellTask extends thl_task.FilesProviderTask {
   private commands: string[] = [];
   private inputs: thl_fs.Path[] = [];
+  private lastCommand: thl_util.PersistentData;
 
-  constructor(options: ShellTask.Options) {
+  constructor(protected readonly options: ShellTask.Options) {
     const dependencies = thl_task.Task.filterArray(thl_util.ensureArray(options.input ?? options.inputs));
     super(options, dependencies);
     this.outputs = thl_task.BuildDir.asBuildPathArray(thl_util.ensureArray(options.output ?? options.outputs));
-    this.cmdFilename = this.outputs[0].append('.cmd');
+    this.lastCommand = new thl_util.PersistentData(this.outputs[0].append('.cmd'));
   }
 
   protected override prepare(): void {
@@ -42,11 +41,7 @@ export class ShellTask extends thl_task.FilesProviderTask<ShellTask.Options> {
       return true;
     }
 
-    const commandDifferent = this.cmdFilename.exists()
-      ? thl_fs.file.readText(this.cmdFilename) !== this.commands.join('\n')
-      : true;
-
-    if (commandDifferent) {
+    if (this.lastCommand.get() !== this.commands.join('\n')) {
       return true;
     }
 
@@ -54,8 +49,6 @@ export class ShellTask extends thl_task.FilesProviderTask<ShellTask.Options> {
   }
 
   protected override async run(taskRunnerOptions?: thl_task.TaskRunner.Options): Promise<void> {
-    this.logDescription();
-
     for (const output of this.outputs) {
       thl_fs.dir.createForFile(output);
     }
@@ -66,9 +59,7 @@ export class ShellTask extends thl_task.FilesProviderTask<ShellTask.Options> {
       });
     }
 
-    thl_log.setOptionsWhile({ action: false }, () => {
-      thl_fs.file.writeText(this.cmdFilename, this.commands.join('\n'));
-    });
+    this.lastCommand.set(this.commands.join('\n'));
   }
 
   private generateSubstitutions(prefix: string, items: thl_fs.Path[]): Record<string, string> {

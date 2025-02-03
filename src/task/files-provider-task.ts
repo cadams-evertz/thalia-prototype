@@ -2,7 +2,7 @@ import * as thl_fs from '../fs';
 
 import { Task } from './task';
 
-export abstract class FilesProviderTask<TOptions extends Task.Options = Task.Options> extends Task<TOptions> {
+export abstract class FilesProviderTask extends Task {
   public outputs: thl_fs.Path[] = [];
 
   public static toPaths(items: FilesProviderTasklike[]): thl_fs.Path[] {

@@ -1,14 +1,15 @@
 import * as thl_log from '../log';
+import * as thl_util from '../util';
 
 import { TaskRunner } from './task-runner';
 
-export abstract class Task<TOptions extends Task.Options = Task.Options> {
+export abstract class Task {
   public get allTasks(): Task[] {
     return [...this.dependencies.map(dependency => dependency.allTasks).flat(), this];
   }
 
   public get description(): string | undefined {
-    return this.options.description;
+    return thl_util.Resolvable.resolve(this.options.description);
   }
 
   protected _status: Task.Status = 'pending';
@@ -21,7 +22,7 @@ export abstract class Task<TOptions extends Task.Options = Task.Options> {
     return this._promise;
   }
 
-  constructor(protected readonly options: TOptions, public readonly dependencies: Task[]) {}
+  constructor(protected readonly options: Task.Options, public readonly dependencies: Task[]) {}
 
   public static filterArray(items: (Task | unknown)[]): Task[] {
     return items.filter(input => input instanceof Task) as Task[];
@@ -44,6 +45,10 @@ export abstract class Task<TOptions extends Task.Options = Task.Options> {
       setStatus('running');
 
       this._promise = new Promise<Task>(resolve => {
+        if (this.description) {
+          thl_log.action(this.description);
+        }
+
         this.run(taskRunnerOptions)
           .then(() => {
             setStatus('complete');
@@ -61,17 +66,11 @@ export abstract class Task<TOptions extends Task.Options = Task.Options> {
   protected prepare(): void {}
   protected abstract needToRun(): boolean;
   protected abstract run(taskRunnerOptions?: TaskRunner.Options): Promise<void>;
-
-  protected logDescription(): void {
-    if (this.description) {
-      thl_log.action(this.description);
-    }
-  }
 }
 
 export namespace Task {
   export interface Options {
-    description?: string;
+    description?: thl_util.Resolvable<string>;
   }
 
   export type Status = 'complete' | 'error' | 'pending' | 'running' | 'unchanged';

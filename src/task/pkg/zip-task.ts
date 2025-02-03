@@ -2,23 +2,24 @@ import * as thl_fs from '../../fs';
 import * as thl_pkg from '../../pkg';
 import * as thl_task from '..';
 
-export class ZipTask extends thl_task.FilesProviderTask<ZipTask.Options> {
+export class ZipTask extends thl_task.FilesProviderTask {
   private inputs: thl_fs.Path[] = [];
-  private readonly output: thl_fs.Path;
   private readonly rootDir?: thl_fs.Path;
 
-  constructor(options: ZipTask.Options) {
+  private get output(): thl_fs.Path {
+    return this.outputs[0];
+  }
+
+  constructor(protected readonly options: ZipTask.Options) {
     const dependencies = thl_task.Task.filterArray(options.inputs);
-    const output = thl_task.BuildDir.asBuildPath(options.output);
     super(
       {
         ...options,
-        description: options.description ?? `Creating package ${output}...`,
+        description: options.description ?? (() => `Creating package ${this.output}...`),
       },
       dependencies,
     );
-    this.output = output;
-    this.outputs = [output];
+    this.outputs = [thl_task.BuildDir.asBuildPath(options.output)];
     this.rootDir = this.options.rootDir ? thl_fs.Path.ensure(this.options.rootDir) : undefined;
   }
 

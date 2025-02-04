@@ -3,9 +3,14 @@ import * as thl_util from '../util';
 
 import { TaskRunner } from './task-runner';
 
-export abstract class Task {
+export abstract class Task<TOptions extends Task.Options = Task.Options, TData = unknown> {
   public get allTasks(): Task[] {
     return [...this.dependencies.map(dependency => dependency.allTasks).flat(), this];
+  }
+
+  private _data?: TData;
+  public get data(): TData | undefined {
+    return this._data;
   }
 
   public get description(): string | undefined {
@@ -17,15 +22,19 @@ export abstract class Task {
     return this._status;
   }
 
-  private _promise?: Promise<Task>;
-  public get promise(): Promise<Task> | undefined {
+  private _promise?: Promise<Task<TOptions, TData>>;
+  public get promise(): Promise<Task<TOptions, TData>> | undefined {
     return this._promise;
   }
 
-  constructor(protected readonly options: Task.Options, public readonly dependencies: Task[]) {}
+  constructor(public readonly options: TOptions, public readonly dependencies: Task[]) {}
 
   public static filterArray(items: (Task | unknown)[]): Task[] {
     return items.filter(input => input instanceof Task) as Task[];
+  }
+
+  public prepare(): TData {
+    return undefined as unknown as TData;
   }
 
   public start(
@@ -37,19 +46,20 @@ export abstract class Task {
       statusChangedCallback(status);
     };
 
-    this.prepare();
+    const data = this.prepare();
+    this._data = data;
 
-    if (!this.needToRun()) {
+    if (!this.needToRun(data)) {
       setStatus('unchanged');
     } else {
       setStatus('running');
 
-      this._promise = new Promise<Task>(resolve => {
+      this._promise = new Promise<Task<TOptions, TData>>(resolve => {
         if (this.description) {
           thl_log.action(this.description);
         }
 
-        this.run(taskRunnerOptions)
+        this.run(data, taskRunnerOptions)
           .then(() => {
             setStatus('complete');
             resolve(this);
@@ -63,9 +73,8 @@ export abstract class Task {
     }
   }
 
-  protected prepare(): void {}
-  protected abstract needToRun(): boolean;
-  protected abstract run(taskRunnerOptions?: TaskRunner.Options): Promise<void>;
+  public abstract needToRun(data: TData): boolean;
+  public abstract run(data: TData, taskRunnerOptions?: TaskRunner.Options): Promise<void>;
 }
 
 export namespace Task {

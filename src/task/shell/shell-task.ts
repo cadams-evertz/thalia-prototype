@@ -4,62 +4,63 @@ import * as thl_task from '..';
 import * as thl_text from '../../text';
 import * as thl_util from '../../util';
 
-export class ShellTask extends thl_task.FilesProviderTask {
-  private commands: string[] = [];
-  private inputs: thl_fs.Path[] = [];
-  private lastCommand: thl_util.PersistentData;
-
-  constructor(protected readonly options: ShellTask.Options) {
-    const dependencies = thl_task.Task.filterArray(thl_util.ensureArray(options.input ?? options.inputs));
-    super(options, dependencies);
-    this.outputs = thl_task.BuildDir.asBuildPathArray(thl_util.ensureArray(options.output ?? options.outputs));
-    this.lastCommand = new thl_util.PersistentData(this.outputs[0].append('.cmd'));
+export class ShellTask extends thl_task.Task<ShellTask.Options, ShellTask.Data> {
+  constructor(options: ShellTask.Options) {
+    super(options, thl_task.Task.filterArray(thl_util.ensureArray(options.input ?? options.inputs)));
   }
 
-  protected override prepare(): void {
-    this.inputs = thl_task.FilesProviderTask.toPaths(thl_util.ensureArray(this.options.input ?? this.options.inputs));
-
+  public override prepare(): ShellTask.Data {
+    const options = this.options;
+    const inputs = thl_task.FilesProvider.toPaths(thl_util.ensureArray(options.input ?? options.inputs));
+    const outputs = thl_task.BuildDir.asBuildPathArray(thl_util.ensureArray(options.output ?? options.outputs));
+    const lastCommand = new thl_util.PersistentData(outputs[0].append('.cmd'));
     const substitutions = {
-      ...this.generateSubstitutions('input', this.inputs),
-      ...this.generateSubstitutions('output', this.outputs),
-      ...this.options.substitutions,
+      ...this.generateSubstitutions('input', inputs),
+      ...this.generateSubstitutions('output', outputs),
+      ...options.substitutions,
     };
+    const commands = options.commands.map(command => thl_text.expandTemplate(command, substitutions));
 
-    this.commands = this.options.commands.map(command => thl_text.expandTemplate(command, substitutions));
+    return {
+      commands,
+      inputs,
+      lastCommand,
+      outputs,
+    };
   }
 
-  protected override needToRun(): boolean {
+  public override needToRun(data: ShellTask.Data): boolean {
     if (this.options.needToRun) {
-      const needToRun = this.options.needToRun(this.inputs, this.outputs);
+      const needToRun = this.options.needToRun(data.inputs, data.outputs);
 
       if (needToRun !== undefined) {
         return needToRun;
       }
     }
 
-    if (this.inputs.length === 0 || this.outputs.length === 0) {
+    if (data.inputs.length === 0 || data.outputs.length === 0) {
       return true;
     }
 
-    if (this.lastCommand.get() !== this.commands.join('\n')) {
+    if (data.lastCommand.get() !== data.commands.join('\n')) {
       return true;
     }
 
-    return thl_fs.file.isNewer(this.inputs, this.outputs);
+    return thl_fs.file.isNewer(data.inputs, data.outputs);
   }
 
-  protected override async run(taskRunnerOptions?: thl_task.TaskRunner.Options): Promise<void> {
-    for (const output of this.outputs) {
+  public override async run(data: ShellTask.Data, taskRunnerOptions?: thl_task.TaskRunner.Options): Promise<void> {
+    for (const output of data.outputs) {
       thl_fs.dir.createForFile(output);
     }
 
-    for (const command of this.commands) {
+    for (const command of data.commands) {
       await thl_process.executeAsync(command, {
         echoCommand: this.options.echoCommand ?? !!taskRunnerOptions?.debug,
       });
     }
 
-    this.lastCommand.set(this.commands.join('\n'));
+    data.lastCommand.set(data.commands.join('\n'));
   }
 
   private generateSubstitutions(prefix: string, items: thl_fs.Path[]): Record<string, string> {
@@ -79,11 +80,17 @@ export namespace ShellTask {
   export interface Options extends thl_task.Task.Options {
     commands: string[];
     echoCommand?: boolean;
-    input?: thl_task.FilesProviderTasklike;
-    inputs?: thl_task.FilesProviderTasklike[];
+    input?: thl_task.FilesProviderlike;
+    inputs?: thl_task.FilesProviderlike[];
     needToRun?: (inputs: thl_fs.Path[], outputs: thl_fs.Path[]) => boolean | undefined;
     output?: thl_fs.Pathlike;
     outputs?: thl_fs.Pathlike[];
     substitutions?: Record<string, unknown>;
+  }
+
+  export interface Data extends thl_task.FilesProvider {
+    commands: string[];
+    inputs: thl_fs.Path[];
+    lastCommand: thl_util.PersistentData;
   }
 }

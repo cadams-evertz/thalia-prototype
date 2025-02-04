@@ -2,44 +2,43 @@ import * as thl_fs from '../../fs';
 import * as thl_pkg from '../../pkg';
 import * as thl_task from '..';
 
-export class ZipTask extends thl_task.FilesProviderTask {
-  private inputs: thl_fs.Path[] = [];
-  private readonly rootDir?: thl_fs.Path;
-
-  private get output(): thl_fs.Path {
-    return this.outputs[0];
-  }
-
-  constructor(protected readonly options: ZipTask.Options) {
-    const dependencies = thl_task.Task.filterArray(options.inputs);
+export class ZipTask extends thl_task.Task<ZipTask.Options, ZipTask.Data> {
+  constructor(options: ZipTask.Options) {
     super(
       {
         ...options,
-        description: options.description ?? (() => `Creating package ${this.output}...`),
+        description: options.description ?? (() => `Creating package ${this.data?.outputs[0]}...`),
       },
-      dependencies,
+      thl_task.Task.filterArray(options.inputs),
     );
-    this.outputs = [thl_task.BuildDir.asBuildPath(options.output)];
-    this.rootDir = this.options.rootDir ? thl_fs.Path.ensure(this.options.rootDir) : undefined;
   }
 
-  protected override prepare(): void {
-    this.inputs = thl_task.FilesProviderTask.toPaths(this.options.inputs);
+  public override prepare(): ZipTask.Data {
+    const inputs = thl_task.FilesProvider.toPaths(this.options.inputs);
+    const outputs = [thl_task.BuildDir.asBuildPath(this.options.output)];
+    const rootDir = this.options.rootDir ? thl_fs.Path.ensure(this.options.rootDir) : undefined;
+
+    return { inputs, outputs, rootDir };
   }
 
-  protected override needToRun(): boolean {
-    return thl_fs.file.isNewer(this.inputs, this.output);
+  public override needToRun(data: ZipTask.Data): boolean {
+    return thl_fs.file.isNewer(data.inputs, data.outputs[0]);
   }
 
-  protected override async run(): Promise<void> {
-    await thl_pkg.zip(this.output, this.inputs, { rootDir: this.rootDir });
+  public override async run(data: ZipTask.Data): Promise<void> {
+    await thl_pkg.zip(data.outputs[0], data.inputs, { rootDir: data.rootDir });
   }
 }
 
 export namespace ZipTask {
   export interface Options extends thl_task.Task.Options {
-    inputs: thl_task.FilesProviderTask[];
+    inputs: thl_task.FilesProviderlike[];
     output: thl_fs.Pathlike;
     rootDir?: thl_fs.Pathlike;
+  }
+
+  export interface Data extends thl_task.FilesProvider {
+    inputs: thl_fs.Path[];
+    rootDir?: thl_fs.Path;
   }
 }

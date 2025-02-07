@@ -1,61 +1,64 @@
 import * as thl_fs from '../../fs';
-import * as thl_process from '../../process';
 import * as thl_task from '..';
 import * as thl_util from '../../util';
 
 import { CppTask } from './cpp-task';
 
-export class CompileTask extends CppTask<CompileTask.Options, CompileTask.Data> {
+export function compile(taskDir: string, options: CompileTask.Options): CompileTask {
+  return thl_task.Task.create(taskDir, () => new CompileTask(options));
+}
+
+class CompileTask extends CppTask {
+  public readonly obj: thl_fs.Path;
+  public readonly source: thl_fs.Path;
+
+  public override get outputs(): thl_fs.Path[] {
+    return [this.obj];
+  }
+
   constructor(options: CompileTask.Options) {
+    const source = thl_task.FilesProvider.toPath(options.source);
+    const obj = thl_task.BuildDir.asBuildPath(source.append('.o'));
     super(
       {
         ...options,
-        description: options.description ?? (() => `Compiling ${this.data?.source ?? this.options.source}...`),
+        dependencies: thl_task.Task.filterArray([options.source]),
+        description: options.description ?? `Compiling ${source}...`,
       },
-      thl_task.Task.filterArray([options.source]),
+      new thl_util.PersistentData(obj.append('.cmd')),
     );
+    this.obj = obj;
+    this.source = source;
+    this.command = `g++ ${this.compileFlags} ${this.includeFlags} ${this.defineFlags} -c ${source} -o ${this.obj}`;
   }
 
-  public static ensure(value: CompileTasklike, options: Omit<CompileTask.Options, 'source'>): CompileTask {
-    return value instanceof CompileTask ? value : new CompileTask({ ...options, source: value });
+  public override needToRun(): boolean {
+    return super.needToRun() || thl_fs.file.isNewer(this.source, this.obj);
   }
 
-  public static ensureArray(values: CompileTasklike[], options: Omit<CompileTask.Options, 'source'>): CompileTask[] {
-    return values.map(value => CompileTask.ensure(value, options));
-  }
-
-  public override prepare(): CompileTask.Data {
-    const { defineFlags, flags, includeFlags } = this.prepareCommon();
-    const source = thl_task.FilesProvider.toPaths([this.options.source])[0];
-    const obj = thl_task.BuildDir.asBuildPath(source.append('.o'));
-    const lastCommand = new thl_util.PersistentData(obj.append('.cmd'));
-    const command = `g++ ${flags} ${includeFlags} ${defineFlags} -c ${source} -o ${obj}`.replace(/  /g, ' ');
-
-    return { source, obj, command, lastCommand };
-  }
-
-  public override needToRun(data: CompileTask.Data): boolean {
-    return data.lastCommand.get() !== data.command || thl_fs.file.isNewer(data.source, data.obj);
-  }
-
-  public override async run(data: CompileTask.Data, taskRunnerOptions?: thl_task.TaskRunner.Options): Promise<void> {
-    thl_fs.dir.createForFile(data.obj);
-    await thl_process.executeAsync(data.command);
-    data.lastCommand.set(data.command);
+  public override async run(taskRunnerOptions?: thl_task.TaskRunner.Options): Promise<void> {
+    thl_fs.dir.createForFile(this.obj);
+    await super.run(taskRunnerOptions);
   }
 }
 
-export namespace CompileTask {
+namespace CompileTask {
   export interface Options extends CppTask.Options {
     source: thl_task.FilesProviderlike;
-  }
-
-  export interface Data extends CppTask.Data {
-    source: thl_fs.Path;
-    obj: thl_fs.Path;
-    command: string;
-    lastCommand: thl_util.PersistentData;
   }
 }
 
 export type CompileTasklike = thl_task.FilesProviderlike | CompileTask;
+
+export namespace CompileTasklike {
+  export function asCompileTask(value: CompileTasklike, options: Omit<CompileTask.Options, 'source'>): CompileTask {
+    return value instanceof CompileTask ? value : new CompileTask({ ...options, source: value });
+  }
+
+  export function asCompileTaskArray(
+    values: CompileTasklike[],
+    options: Omit<CompileTask.Options, 'source'>,
+  ): CompileTask[] {
+    return values.map(value => CompileTasklike.asCompileTask(value, options));
+  }
+}

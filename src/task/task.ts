@@ -1,5 +1,6 @@
 import * as thl_fs from '../fs';
 import * as thl_log from '../log';
+import * as thl_util from '../util';
 
 import { TaskRunner } from './task-runner';
 
@@ -26,8 +27,12 @@ export abstract class Task {
     this.description = options.description;
   }
 
-  public static create<T>(taskDir: string, taskCreator: () => T): T {
-    return thl_fs.dir.setCurrentWhile(taskDir, taskCreator);
+  public static create<TTask, TOptions>(
+    taskDir: string,
+    options: thl_util.Resolvable<TOptions>,
+    taskCreator: (options: TOptions) => TTask,
+  ): TTask {
+    return thl_fs.dir.setCurrentWhile(taskDir, () => taskCreator(thl_util.Resolvable.resolve(options)));
   }
 
   public static filterArray(items: (Task | unknown)[]): Task[] {

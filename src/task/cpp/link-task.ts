@@ -5,8 +5,8 @@ import * as thl_util from '../../util';
 import { CompileTasklike } from './compile-task';
 import { CppTask } from './cpp-task';
 
-export function link(taskDir: string, options: LinkTask.Options): LinkTask {
-  return thl_task.Task.create(taskDir, () => new LinkTask(options));
+export function link(taskDir: string, options: thl_util.Resolvable<LinkTask.Options>): LinkTask {
+  return thl_task.Task.create(taskDir, options, options => new LinkTask(options));
 }
 
 class LinkTask extends CppTask {
@@ -32,7 +32,7 @@ class LinkTask extends CppTask {
     );
     this.inputFiles = inputTasks.map(input => input.obj);
     this.exe = exe;
-    this.command = `g++ ${this.compileFlags} ${this.inputFiles} -o ${exe} ${this.linkFlags}`;
+    this.setCommand(`g++ {{compileFlags}} ${this.inputFiles.join(' ')} -o ${exe} {{linkFlags}}`);
   }
 
   public override needToRun(): boolean {

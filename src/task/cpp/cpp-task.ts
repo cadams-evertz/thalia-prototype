@@ -1,27 +1,35 @@
 import * as thl_fs from '../../fs';
 import * as thl_process from '../../process';
 import * as thl_task from '..';
+import * as thl_text from '../../text';
 import * as thl_util from '../../util';
 
 export abstract class CppTask extends thl_task.FilesProviderTask {
   public readonly compileFlags: string[];
   public readonly defines: string[];
-  public readonly defineFlags: string;
   public readonly includeDirs: thl_fs.Path[];
-  public readonly includeFlags: string;
   public readonly linkFlags: string[];
 
-  protected command: string = 'undefined';
+  protected command?: string;
 
   constructor(options: CppTask.Options, protected readonly lastCommand: thl_util.PersistentData) {
     super(options);
 
     this.compileFlags = options.compileFlags ?? [];
     this.defines = options.defines ?? [];
-    this.defineFlags = this.defines.map(define => `-D${define}`).join(' ');
     this.includeDirs = thl_fs.Path.ensureArray(options.includeDirs ?? []);
-    this.includeFlags = this.includeDirs.map(includeDir => `-I${includeDir}`).join(' ') ?? '';
     this.linkFlags = options.linkFlags ?? [];
+  }
+
+  protected setCommand(template: string): void {
+    const subsitutions = {
+      compileFlags: this.compileFlags.join(' '),
+      defines: this.defines.map(define => `-D${define}`).join(' '),
+      includes: this.includeDirs.map(includeDir => `-I${includeDir}`).join(' '),
+      linkFlags: this.linkFlags.join(' '),
+    };
+
+    this.command = thl_text.expandTemplate(template, subsitutions).replace(/  /g, ' ');
   }
 
   public static combineOptions(tasks: CppTask[]): CppTask.Options {
@@ -40,11 +48,14 @@ export abstract class CppTask extends thl_task.FilesProviderTask {
   }
 
   public override needToRun(): boolean {
-    this.command = this.command.replace(/  /g, ' ');
     return this.lastCommand.get() !== this.command;
   }
 
   public override async run(taskRunnerOptions?: thl_task.TaskRunner.Options): Promise<void> {
+    if (!this.command) {
+      throw new Error('Command not set');
+    }
+
     await thl_process.executeAsync(this.command);
     this.lastCommand.set(this.command);
   }

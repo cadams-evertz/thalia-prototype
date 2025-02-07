@@ -4,8 +4,8 @@ import * as thl_util from '../../util';
 
 import { CppTask } from './cpp-task';
 
-export function compile(taskDir: string, options: CompileTask.Options): CompileTask {
-  return thl_task.Task.create(taskDir, () => new CompileTask(options));
+export function compile(taskDir: string, options: thl_util.Resolvable<CompileTask.Options>): CompileTask {
+  return thl_task.Task.create(taskDir, options, options => new CompileTask(options));
 }
 
 class CompileTask extends CppTask {
@@ -29,7 +29,7 @@ class CompileTask extends CppTask {
     );
     this.obj = obj;
     this.source = source;
-    this.command = `g++ ${this.compileFlags} ${this.includeFlags} ${this.defineFlags} -c ${source} -o ${this.obj}`;
+    this.setCommand(`g++ {{compileFlags}} {{includes}} {{defines}} -c ${source} -o ${obj}`);
   }
 
   public override needToRun(): boolean {

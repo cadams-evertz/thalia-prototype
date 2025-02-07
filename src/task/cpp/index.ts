@@ -1,2 +1,2 @@
-export { CompileTask } from './compile-task';
-export { CppTask as Task } from './cpp-task';
+export { compile } from './compile-task';
+export { link } from './link-task';

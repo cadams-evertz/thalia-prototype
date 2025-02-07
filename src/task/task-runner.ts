@@ -2,7 +2,7 @@ import * as thl_debug from '../debug';
 import * as thl_log from '../log';
 import * as thl_process from '../process';
 
-import { Task, Task as thl_task_Task } from './task';
+import { Task } from './task';
 
 export namespace TaskRunner {
   export interface Options {
@@ -13,17 +13,17 @@ export namespace TaskRunner {
 
 export type Debug = 'brief' | 'verbose';
 
-export async function run(taskOrTasks: thl_task_Task | thl_task_Task[], options?: TaskRunner.Options): Promise<void> {
+export async function run(taskOrTasks: Task | Task[], options?: TaskRunner.Options): Promise<void> {
   await new TaskRunner(taskOrTasks, options).run();
 }
 
 class TaskRunner {
   private readonly debug?: Debug;
   private readonly jobs: number;
-  private readonly remainingTasks = new Set<thl_task_Task>();
-  private readonly runningTasks = new Set<thl_task_Task>();
+  private readonly remainingTasks = new Set<Task>();
+  private readonly runningTasks = new Set<Task>();
 
-  constructor(taskOrTasks: thl_task_Task | thl_task_Task[], private readonly options?: TaskRunner.Options) {
+  constructor(taskOrTasks: Task | Task[], private readonly options?: TaskRunner.Options) {
     this.debug = options?.debug;
     this.jobs = options?.jobs ? options.jobs : Math.max(1, thl_process.cpuCount() - 1);
 
@@ -50,7 +50,7 @@ class TaskRunner {
     while (this.runningTasks.size > 0) {
       try {
         const runningTaskPromises = [...this.runningTasks].map(task => task.promise);
-        const finished: thl_task_Task = await Promise_any(runningTaskPromises);
+        const finished = await Promise_any(runningTaskPromises);
 
         if (finished.status === 'error') {
           throw new Error(`Task '${finished.description}' finished with error status`);
@@ -106,7 +106,7 @@ class TaskRunner {
     return false;
   }
 
-  private debugLog(message: string, task: thl_task_Task): void {
+  private debugLog(message: string, task: Task): void {
     if (this.options?.debug) {
       thl_log.debug(
         `[TaskRunner] ${message} ` +

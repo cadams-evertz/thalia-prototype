@@ -86,7 +86,7 @@ export function multipackage(options: MultipackageOptions): thl_fs.Path[] {
   const debFilesPath = debRootPath.joinWith(installToDir.toString());
   const contents = options.contents.map(operation => ({
     src: thl_fs.Path.ensureArray(operation.src),
-    dest: thl_fs.Path.is(operation.dest) ? operation.dest : debFilesPath.joinWith(operation.dest),
+    dest: operation.dest instanceof thl_fs.Path ? operation.dest : debFilesPath.joinWith(operation.dest),
   }));
 
   thl_fs.file.multiCopy(contents);

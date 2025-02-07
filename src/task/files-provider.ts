@@ -11,13 +11,21 @@ export namespace FilesProvider {
     return value?.outputs;
   }
 
+  export function toPath(item: FilesProviderlike): thl_fs.Path {
+    const paths = toPaths([item]);
+    if (paths.length !== 1) {
+      throw new Error(`Expected exactly one path, but got ${paths.length}`);
+    }
+    return paths[0];
+  }
+
   export function toPaths(items: FilesProviderlike[]): thl_fs.Path[] {
     return items
       .map(item => {
         if (FilesProvider.is(item)) {
           return item.outputs;
         } else if (item instanceof Task) {
-          return FilesProvider.is(item.data) ? item.data.outputs : [];
+          return FilesProvider.is(item) ? item.outputs : [];
         } else {
           return thl_fs.Path.ensure(item);
         }
@@ -27,3 +35,9 @@ export namespace FilesProvider {
 }
 
 export type FilesProviderlike = thl_fs.Pathlike | FilesProvider | Task;
+
+export abstract class FilesProviderTask extends Task implements FilesProvider {
+  public get outputs(): thl_fs.Path[] {
+    throw new Error('outputs not implemented.');
+  }
+}

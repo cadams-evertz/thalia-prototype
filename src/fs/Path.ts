@@ -41,28 +41,17 @@ export class Path {
     return this._absolute.endsWith(suffix);
   }
 
-  public static ensure(pathlike: Pathlike, relativeTo?: Path): Path;
-  public static ensure(pathlikes: Pathlike[], relativeTo?: Path): Path[];
-  public static ensure(pathlikes: Pathlike | Pathlike[], relativeTo?: Path): Path | Path[] {
-    if (Array.isArray(pathlikes)) {
-      return pathlikes.map(pathlike => Path.ensure(pathlike, relativeTo));
-    } else {
-      const pathlike = pathlikes;
-      return Path.is(pathlike) ? pathlike : new Path(pathlike, relativeTo);
-    }
+  public static ensure(pathlike: Pathlike, relativeTo?: Path): Path {
+    return pathlike instanceof Path ? pathlike : new Path(pathlike, relativeTo);
   }
 
-  public static ensureArray(pathlikes: thl_util.ArrayOrSingle<Pathlike>): Path[] {
+  public static ensureArray(pathlikes: thl_util.ArrayOrSingle<Pathlike>, relativeTo?: Path): Path[] {
     pathlikes = thl_util.ensureArray(pathlikes);
-    return pathlikes.map(pathlike => Path.ensure(pathlike));
+    return pathlikes.map(pathlike => Path.ensure(pathlike, relativeTo));
   }
 
   public exists(): boolean {
     return fs.existsSync(this._absolute);
-  }
-
-  public static is(value: unknown): value is Path {
-    return value instanceof Path;
   }
 
   public isDirectory(): boolean {

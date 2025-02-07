@@ -1,20 +1,19 @@
+import * as thl_fs from '../fs';
 import * as thl_log from '../log';
-import * as thl_util from '../util';
 
 import { TaskRunner } from './task-runner';
 
-export abstract class Task<TOptions extends Task.Options = Task.Options, TData = unknown> {
+export abstract class Task {
   public get allTasks(): Task[] {
     return [...this.dependencies.map(dependency => dependency.allTasks).flat(), this];
   }
 
-  private _data?: TData;
-  public get data(): TData | undefined {
-    return this._data;
-  }
+  public readonly dependencies: Task[];
+  public readonly description?: string;
 
-  public get description(): string | undefined {
-    return thl_util.Resolvable.resolve(this.options.description);
+  private _promise?: Promise<Task>;
+  public get promise(): Promise<Task> | undefined {
+    return this._promise;
   }
 
   protected _status: Task.Status = 'pending';
@@ -22,19 +21,17 @@ export abstract class Task<TOptions extends Task.Options = Task.Options, TData =
     return this._status;
   }
 
-  private _promise?: Promise<Task<TOptions, TData>>;
-  public get promise(): Promise<Task<TOptions, TData>> | undefined {
-    return this._promise;
+  constructor(options: Task.Options) {
+    this.dependencies = options.dependencies ?? [];
+    this.description = options.description;
   }
 
-  constructor(public readonly options: TOptions, public readonly dependencies: Task[]) {}
+  public static create<T>(taskDir: string, taskCreator: () => T): T {
+    return thl_fs.dir.setCurrentWhile(taskDir, taskCreator);
+  }
 
   public static filterArray(items: (Task | unknown)[]): Task[] {
     return items.filter(input => input instanceof Task) as Task[];
-  }
-
-  public prepare(): TData {
-    return undefined as unknown as TData;
   }
 
   public start(
@@ -46,20 +43,17 @@ export abstract class Task<TOptions extends Task.Options = Task.Options, TData =
       statusChangedCallback(status);
     };
 
-    const data = this.prepare();
-    this._data = data;
-
-    if (!this.needToRun(data)) {
+    if (!this.needToRun()) {
       setStatus('unchanged');
     } else {
       setStatus('running');
 
-      this._promise = new Promise<Task<TOptions, TData>>(resolve => {
+      this._promise = new Promise<Task>(resolve => {
         if (this.description) {
           thl_log.action(this.description);
         }
 
-        this.run(data, taskRunnerOptions)
+        this.run(taskRunnerOptions)
           .then(() => {
             setStatus('complete');
             resolve(this);
@@ -73,13 +67,14 @@ export abstract class Task<TOptions extends Task.Options = Task.Options, TData =
     }
   }
 
-  public abstract needToRun(data: TData): boolean;
-  public abstract run(data: TData, taskRunnerOptions?: TaskRunner.Options): Promise<void>;
+  public abstract needToRun(): boolean;
+  public abstract run(taskRunnerOptions?: TaskRunner.Options): Promise<void>;
 }
 
 export namespace Task {
   export interface Options {
-    description?: thl_util.Resolvable<string>;
+    dependencies?: Task[];
+    description?: string;
   }
 
   export type Status = 'complete' | 'error' | 'pending' | 'running' | 'unchanged';

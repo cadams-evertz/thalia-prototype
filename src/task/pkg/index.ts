@@ -1,1 +1,1 @@
-export { ZipTask } from './zip-task';
+export { zip } from './zip-task';

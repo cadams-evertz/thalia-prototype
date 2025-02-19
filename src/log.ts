@@ -73,16 +73,20 @@ export function info(message: string): void {
   }
 }
 
+export function setOptions(options: Options): void {
+  currentOptions = { ...currentOptions, ...options };
+}
+
 export function setOptionsWhile(options: Options, work: () => void): void {
   const previousShow = currentOptions;
-  currentOptions = { ...currentOptions, ...options };
+  setOptions(options);
   work();
   currentOptions = previousShow;
 }
 
 export async function setOptionsWhileAsync(options: Options, work: () => Promise<void>): Promise<void> {
   const previousShow = currentOptions;
-  currentOptions = { ...currentOptions, ...options };
+  setOptions(options);
   await work();
   currentOptions = previousShow;
 }

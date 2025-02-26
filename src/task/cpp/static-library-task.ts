@@ -5,49 +5,53 @@ import * as thl_util from '../../util';
 import { CompileTasklike } from './compile-task';
 import { CppTask } from './cpp-task';
 
-export function link(taskDir: string, options: thl_util.Resolvable<LinkTask.Options>): LinkTask {
-  return thl_task.Task.create(taskDir, options, options => new LinkTask(options));
+export function staticLibrary(
+  taskDir: string,
+  options: thl_util.Resolvable<StaticLibraryTask.Options>,
+): StaticLibraryTask {
+  return thl_task.Task.create(taskDir, options, options => new StaticLibraryTask(options));
 }
 
-class LinkTask extends CppTask {
+class StaticLibraryTask extends CppTask {
   public readonly inputFiles: thl_fs.Path[];
-  public readonly exe: thl_fs.Path;
+  public readonly lib: thl_fs.Path;
 
   public override get outputs(): thl_fs.Path[] {
-    return [this.exe];
+    return [this.lib];
   }
 
-  constructor(options: LinkTask.Options) {
+  constructor(options: StaticLibraryTask.Options) {
     const inputTasks = CompileTasklike.asCompileTaskArray(options.inputs, options);
     const combinedOptions = CppTask.combineOptions(inputTasks);
-    const exe = thl_task.BuildDir.asBuildPath(options.exe);
+    const lib = thl_task.BuildDir.asBuildPath(options.lib);
     super(
       {
         ...options,
         ...combinedOptions,
         dependencies: inputTasks,
-        description: options.description ?? `Linking ${exe}...`,
+        description: options.description ?? `Linking ${lib}...`,
       },
-      new thl_util.PersistentData(exe.append('.cmd')),
+      new thl_util.PersistentData(lib.append('.cmd')),
     );
     this.inputFiles = inputTasks.map(input => input.obj);
-    this.exe = exe;
-    this.setCommand(`g++ {{compileFlags}} ${this.inputFiles.join(' ')} -o ${exe} {{linkFlags}}`);
+    this.lib = lib;
+
+    this.setCommand(`ar rs ${lib} ${this.inputFiles.join(' ')}`);
   }
 
   public override needToRun(): boolean {
-    return super.needToRun() || thl_fs.file.isNewer(this.inputFiles, this.exe);
+    return super.needToRun() || thl_fs.file.isNewer(this.inputFiles, this.lib);
   }
 
   public override async run(taskRunnerOptions?: thl_task.TaskRunner.Options): Promise<void> {
-    thl_fs.dir.createForFile(this.exe);
+    thl_fs.dir.createForFile(this.lib);
     await super.run(taskRunnerOptions);
   }
 }
 
-namespace LinkTask {
+namespace StaticLibraryTask {
   export interface Options extends CppTask.Options {
     inputs: CompileTasklike[];
-    exe: thl_fs.Pathlike;
+    lib: thl_fs.Pathlike;
   }
 }

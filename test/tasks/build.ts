@@ -14,6 +14,7 @@ import * as thl from 'thalia';
 thl.task.BuildDir.set(thl.fs.dir.getCurrent(), 'build-out');
 
 import { appx } from './app/x/build';
+import { liba } from './lib/a/build';
 
 export function test(taskDir: string, options: thl.util.Resolvable<TestTask.Options>): TestTask {
   return thl.task.Task.create(taskDir, options, options => new TestTask(options));
@@ -125,10 +126,10 @@ async function shellTest(): Promise<void> {
 }
 
 async function cppTest(): Promise<void> {
-  await thl.task.run(appx, { debug: 'brief' });
+  // await thl.task.run(appx, { debug: 'brief' });
 
   const zip = thl.task.pkg.zip(__dirname, {
-    inputs: [appx],
+    inputs: [appx, liba],
     zip: 'cpp.zip',
     rootDir: thl.task.BuildDir.buildDir,
   });

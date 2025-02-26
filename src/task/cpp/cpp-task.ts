@@ -4,7 +4,7 @@ import * as thl_task from '..';
 import * as thl_text from '../../text';
 import * as thl_util from '../../util';
 
-export abstract class CppTask extends thl_task.FilesProviderTask {
+export abstract class CppTask extends thl_task.Task {
   public readonly compileFlags: string[];
   public readonly defines: string[];
   public readonly includeDirs: thl_fs.Path[];

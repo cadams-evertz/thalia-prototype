@@ -7,7 +7,7 @@ namespace b {
 
   int func() {
     std::cout << "b::func()" << std::endl;
-    return a::func();
+    return a::func() + 202;
   }
 
 }

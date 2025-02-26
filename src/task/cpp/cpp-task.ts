@@ -3,22 +3,29 @@ import * as thl_process from '../../process';
 import * as thl_task from '..';
 import * as thl_text from '../../text';
 import * as thl_util from '../../util';
+import { StaticLibraryTask } from './static-library-task';
 
 export abstract class CppTask extends thl_task.Task {
   public readonly compileFlags: string[];
   public readonly defines: string[];
   public readonly includeDirs: thl_fs.Path[];
+  public readonly libs: StaticLibraryTask[];
   public readonly linkFlags: string[];
 
   protected command?: string;
 
   constructor(options: CppTask.Options, protected readonly lastCommand: thl_util.PersistentData) {
-    super(options);
+    super({
+      ...options,
+      dependencies: [...options.dependencies ?? [], ...(options.libs ?? [])],
+    });
 
-    this.compileFlags = options.compileFlags ?? [];
-    this.defines = options.defines ?? [];
-    this.includeDirs = thl_fs.Path.ensureArray(options.includeDirs ?? []);
-    this.linkFlags = options.linkFlags ?? [];
+    const combinedOptions = CppTask.combineOptions(options.libs ?? [], options);
+    this.compileFlags = combinedOptions.compileFlags ?? [];
+    this.defines = combinedOptions.defines ?? [];
+    this.includeDirs = thl_fs.Path.ensureArray(combinedOptions.includeDirs ?? []);
+    this.libs = combinedOptions.libs ?? [];
+    this.linkFlags = combinedOptions.linkFlags ?? [];
   }
 
   protected setCommand(template: string): void {
@@ -32,7 +39,7 @@ export abstract class CppTask extends thl_task.Task {
     this.command = thl_text.expandTemplate(template, subsitutions).replace(/  /g, ' ');
   }
 
-  public static combineOptions(tasks: CppTask[]): CppTask.Options {
+  public static combineOptions(tasks: CppTask[], options: CppTask.Options = {}): CppTask.Options {
     function combine<T>(a: T[] | undefined, b: T[] | undefined): T[] {
       return thl_util.unique([...(a ?? []), ...(b ?? [])]);
     }
@@ -42,9 +49,10 @@ export abstract class CppTask extends thl_task.Task {
         compileFlags: combine(combinedOptions.compileFlags, task.compileFlags),
         defines: combine(combinedOptions.defines, task.defines),
         includeDirs: combine(combinedOptions.includeDirs, task.includeDirs),
+        libs: combine(combinedOptions.libs, task.libs),
         linkFlags: combine(combinedOptions.linkFlags, task.linkFlags),
       };
-    }, {} as CppTask.Options);
+    }, options);
   }
 
   public override needToRun(): boolean {
@@ -66,6 +74,7 @@ export namespace CppTask {
     compileFlags?: string[];
     defines?: string[];
     includeDirs?: thl_fs.Pathlike[];
+    libs?: StaticLibraryTask[];
     linkFlags?: string[];
   }
 }

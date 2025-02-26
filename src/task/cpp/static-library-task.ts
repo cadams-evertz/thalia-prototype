@@ -12,7 +12,7 @@ export function staticLibrary(
   return thl_task.Task.create(taskDir, options, options => new StaticLibraryTask(options));
 }
 
-class StaticLibraryTask extends CppTask {
+export class StaticLibraryTask extends CppTask {
   public readonly inputFiles: thl_fs.Path[];
   public readonly lib: thl_fs.Path;
 
@@ -22,14 +22,19 @@ class StaticLibraryTask extends CppTask {
 
   constructor(options: StaticLibraryTask.Options) {
     const inputTasks = CompileTasklike.asCompileTaskArray(options.inputs, options);
-    const combinedOptions = CppTask.combineOptions(inputTasks);
-    const lib = thl_task.BuildDir.asBuildPath(options.lib);
+    const combinedOptions = CppTask.combineOptions(inputTasks, options);
+    const rawLib = thl_task.BuildDir.asBuildPath(options.lib);
+    const lib = rawLib.dirPath().joinWith(`lib${rawLib.basename()}.a`);
     super(
       {
-        ...options,
         ...combinedOptions,
         dependencies: inputTasks,
         description: options.description ?? `Linking ${lib}...`,
+        linkFlags: [
+          ...(combinedOptions.linkFlags ?? []),
+          `-L${lib.dirPath().absolute()}`,
+          `-l${lib.basename('.a').slice(3)}`,
+        ],
       },
       new thl_util.PersistentData(lib.append('.cmd')),
     );

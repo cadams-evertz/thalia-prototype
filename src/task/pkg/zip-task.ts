@@ -7,7 +7,7 @@ export function zip(taskDir: string, options: thl_util.Resolvable<ZipTask.Option
   return thl_task.Task.create(taskDir, options, options => new ZipTask(options));
 }
 
-class ZipTask extends thl_task.FilesProviderTask {
+class ZipTask extends thl_task.Task {
   public readonly inputs: thl_fs.Path[];
   public readonly zip: thl_fs.Path;
   public readonly rootDir?: thl_fs.Path;

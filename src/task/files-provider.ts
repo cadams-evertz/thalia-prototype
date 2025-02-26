@@ -35,9 +35,3 @@ export namespace FilesProvider {
 }
 
 export type FilesProviderlike = thl_fs.Pathlike | FilesProvider | Task;
-
-export abstract class FilesProviderTask extends Task implements FilesProvider {
-  public get outputs(): thl_fs.Path[] {
-    throw new Error('outputs not implemented.');
-  }
-}

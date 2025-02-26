@@ -1,5 +1,6 @@
 export { BuildDir } from './build-dir';
-export { FilesProvider, FilesProviderlike, FilesProviderTask } from './files-provider';
+export { FilesProvider, FilesProviderlike } from './files-provider';
+export { files } from './files-task';
 export { shell } from './shell-task';
 export { Task } from './task';
 export { run, TaskRunner } from './task-runner';

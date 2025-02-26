@@ -1,16 +1,19 @@
 import * as thl_fs from '../fs';
 import * as thl_log from '../log';
 import * as thl_util from '../util';
+import { FilesProvider } from './files-provider';
 
 import { TaskRunner } from './task-runner';
 
-export abstract class Task {
+export abstract class Task implements FilesProvider {
   public get allTasks(): Task[] {
     return [...this.dependencies.map(dependency => dependency.allTasks).flat(), this];
   }
 
   public readonly dependencies: Task[];
   public readonly description?: string;
+
+  public abstract outputs: thl_fs.Path[];
 
   private _promise?: Promise<Task>;
   public get promise(): Promise<Task> | undefined {

@@ -1,5 +1,11 @@
 /*
  * TODO
+ *
+ * - Static library task
+ * - Generated code
+ * - C++ deps generation and parsing
+ * - Prebuilt static library task
+ * - Apt task
  */
 
 import * as thl from 'thalia';
@@ -17,6 +23,10 @@ class TestTask extends thl.task.Task {
   public readonly _needToRun?: boolean;
   public readonly dummy: string;
 
+  public override get outputs(): thl.fs.Path[] {
+    return [];
+  }
+
   constructor(options: TestTask.Options) {
     super(options);
     this._needToRun = options.needToRun;
@@ -32,15 +42,13 @@ class TestTask extends thl.task.Task {
   }
 
   public override async run(taskRunnerOptions?: thl.task.TaskRunner.Options): Promise<void> {
-    return new Promise<void>(resolve => {
-      if (taskRunnerOptions?.debug) {
-        console.log(`${this.dummy} debug...`);
-      }
-      setTimeout(() => {
-        console.log(`${this.dummy} done`);
-        resolve();
-      }, 250);
-    });
+    if (taskRunnerOptions?.debug) {
+      console.log(`${this.dummy} debug...`);
+    }
+
+    await thl.util.asyncTimeout(500);
+
+    console.log(`${this.dummy} done`);
   }
 }
 

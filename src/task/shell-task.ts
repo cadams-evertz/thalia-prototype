@@ -4,7 +4,7 @@ import * as thl_text from '../text';
 import * as thl_util from '../util';
 
 import { BuildDir } from './build-dir';
-import { FilesProvider, FilesProviderlike, FilesProviderTask } from './files-provider';
+import { FilesProvider, FilesProviderlike } from './files-provider';
 import { Task } from './task';
 import { TaskRunner } from './task-runner';
 
@@ -12,7 +12,7 @@ export function shell(taskDir: string, options: thl_util.Resolvable<ShellTask.Op
   return Task.create(taskDir, options, options => new ShellTask(options));
 }
 
-class ShellTask extends FilesProviderTask {
+class ShellTask extends Task {
   public readonly commands: string[];
   public readonly echoCommand: boolean;
   public readonly inputs: thl_fs.Path[];

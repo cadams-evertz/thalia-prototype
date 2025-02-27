@@ -1,10 +1,9 @@
 /*
  * TODO
  *
- * - Static library task
  * - Generated code
  * - C++ deps generation and parsing
- * - Prebuilt static library task
+ * - C++ variants
  * - Apt task
  */
 

@@ -17,7 +17,7 @@ export abstract class CppTask extends thl_task.Task {
   constructor(options: CppTask.Options, protected readonly lastCommand: thl_util.PersistentData) {
     super({
       ...options,
-      dependencies: [...options.dependencies ?? [], ...(options.libs ?? [])],
+      dependencies: [...(options.dependencies ?? []), ...(options.libs ?? [])],
     });
 
     const combinedOptions = CppTask.combineOptions(options.libs ?? [], options);

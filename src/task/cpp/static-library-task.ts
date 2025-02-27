@@ -15,18 +15,27 @@ export function staticLibrary(
 export class StaticLibraryTask extends CppTask {
   public readonly inputFiles: thl_fs.Path[];
   public readonly lib: thl_fs.Path;
+  public readonly prebuilt: boolean;
 
   public override get outputs(): thl_fs.Path[] {
     return [this.lib];
   }
 
   constructor(options: StaticLibraryTask.Options) {
-    const inputTasks = CompileTasklike.asCompileTaskArray(options.inputs, options);
+    const inputTasks = CompileTasklike.asCompileTaskArray(options.inputs ?? [], options);
     const combinedOptions = CppTask.combineOptions(inputTasks, options);
-    const rawLib = thl_task.BuildDir.asBuildPath(options.lib);
-    const lib = rawLib.dirPath().joinWith(`lib${rawLib.basename()}.a`);
+    let lib: thl_fs.Path;
+
+    if (options.prebuilt) {
+      lib = thl_fs.Path.ensure(options.lib);
+    } else {
+      const rawLib = thl_task.BuildDir.asBuildPath(options.lib);
+      lib = rawLib.dirPath().joinWith(`lib${rawLib.basename()}.a`);
+    }
+
     super(
       {
+        ...options,
         ...combinedOptions,
         dependencies: inputTasks,
         description: options.description ?? `Linking ${lib}...`,
@@ -40,12 +49,13 @@ export class StaticLibraryTask extends CppTask {
     );
     this.inputFiles = inputTasks.map(input => input.obj);
     this.lib = lib;
+    this.prebuilt = !!options.prebuilt;
 
     this.setCommand(`ar rs ${lib} ${this.inputFiles.join(' ')}`);
   }
 
   public override needToRun(): boolean {
-    return super.needToRun() || thl_fs.file.isNewer(this.inputFiles, this.lib);
+    return !this.prebuilt && (super.needToRun() || thl_fs.file.isNewer(this.inputFiles, this.lib));
   }
 
   public override async run(taskRunnerOptions?: thl_task.TaskRunner.Options): Promise<void> {
@@ -56,7 +66,8 @@ export class StaticLibraryTask extends CppTask {
 
 namespace StaticLibraryTask {
   export interface Options extends CppTask.Options {
-    inputs: CompileTasklike[];
+    inputs?: CompileTasklike[];
     lib: thl_fs.Pathlike;
+    prebuilt?: boolean;
   }
 }

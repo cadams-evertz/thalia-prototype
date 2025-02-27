@@ -25,7 +25,7 @@ class LinkTask extends CppTask {
       {
         ...options,
         ...combinedOptions,
-        dependencies: [...options.dependencies ?? [], ...inputTasks],
+        dependencies: [...(options.dependencies ?? []), ...inputTasks],
         description: options.description ?? `Linking ${exe}...`,
       },
       new thl_util.PersistentData(exe.append('.cmd')),

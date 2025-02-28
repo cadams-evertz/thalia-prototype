@@ -33,7 +33,7 @@ class CompileTask extends CppTask {
   }
 
   public override needToRun(): boolean {
-    return super.needToRun() || thl_fs.file.isNewer(this.source, this.obj);
+    return super.needToRun() || this.isNewerThanOutputs(this.source);
   }
 
   public override async run(taskRunnerOptions?: thl_task.TaskRunner.Options): Promise<void> {

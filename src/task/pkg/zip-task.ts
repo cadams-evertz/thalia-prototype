@@ -1,5 +1,6 @@
 import * as thl_fs from '../../fs';
 import * as thl_pkg from '../../pkg';
+import * as thl_log from '../../log';
 import * as thl_task from '..';
 import * as thl_util from '../../util';
 
@@ -29,11 +30,13 @@ class ZipTask extends thl_task.Task {
   }
 
   public override needToRun(): boolean {
-    return thl_fs.file.isNewer(this.inputs, this.zip);
+    return this.isNewerThanOutputs(this.inputs) || this.areDependenciesNewerThanOutputs();
   }
 
   public override async run(): Promise<void> {
-    await thl_pkg.zip(this.zip, this.inputs, { rootDir: this.rootDir });
+    thl_log.setOptionsWhileAsync({ action: false }, async () => {
+      await thl_pkg.zip(this.zip, this.inputs, { rootDir: this.rootDir });
+    });
   }
 }
 

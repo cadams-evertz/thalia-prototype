@@ -36,7 +36,7 @@ class LinkTask extends CppTask {
   }
 
   public override needToRun(): boolean {
-    return super.needToRun() || thl_fs.file.isNewer(this.inputFiles, this.exe);
+    return super.needToRun() || this.isNewerThanOutputs(this.inputFiles) || this.areDependenciesNewerThanOutputs();
   }
 
   public override async run(taskRunnerOptions?: thl_task.TaskRunner.Options): Promise<void> {

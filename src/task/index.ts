@@ -1,4 +1,5 @@
 export { BuildDir } from './build-dir';
+export { code } from './code-task';
 export { FilesProvider, FilesProviderlike } from './files-provider';
 export { files } from './files-task';
 export { shell } from './shell-task';

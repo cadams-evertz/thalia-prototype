@@ -77,6 +77,20 @@ export abstract class Task implements FilesProvider {
 
   public abstract needToRun(): boolean;
   public abstract run(taskRunnerOptions?: TaskRunner.Options): Promise<void>;
+
+  protected areDependenciesNewerThanOutputs(): boolean {
+    for (const dependency of this.dependencies) {
+      if (thl_fs.file.isNewer(dependency.outputs, this.outputs)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  protected isNewerThanOutputs(filenames: thl_util.ArrayOrSingle<thl_fs.Pathlike>): boolean {
+    return thl_fs.file.isNewer(filenames, this.outputs);
+  }
 }
 
 export namespace Task {

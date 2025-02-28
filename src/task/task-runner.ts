@@ -59,10 +59,14 @@ class TaskRunner {
         this.runningTasks.delete(finished);
 
         if (this.remainingTasks.size > 0) {
-          if (!this.startNextTask()) {
-            if (this.runningTasks.size === 0) {
-              throw new Error('Could not start the next task');
+          while (this.runningTasks.size < this.jobs) {
+            if (!this.startNextTask()) {
+              break;
             }
+          }
+
+          if (this.remainingTasks.size > 0 && this.runningTasks.size === 0) {
+            throw new Error('Could not start the next task');
           }
         }
       } catch (error) {
@@ -76,6 +80,7 @@ class TaskRunner {
       const incompleteDependencies = Task.incomplete(task.dependencies);
 
       if (incompleteDependencies.length === 0) {
+        this.debugLog(`Dependencies complete. Starting`, task);
         this.remainingTasks.delete(task);
 
         task.start(this.options, status => {

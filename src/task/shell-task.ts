@@ -27,7 +27,7 @@ class ShellTask extends Task {
   constructor(options: ShellTask.Options) {
     const inputs = thl_util.ensureArray(options.input ?? options.inputs);
     const outputs = thl_util.ensureArray(options.output ?? options.outputs);
-    super({ ...options, dependencies: Task.filterArray(inputs) });
+    super({ ...options, dependencies: [...(options.dependencies ?? []), ...Task.filterArray(inputs)] });
     this.echoCommand = !!options.echoCommand;
     this.inputs = FilesProvider.toPaths(inputs);
     this.customNeedToRun = options.needToRun;
@@ -63,6 +63,10 @@ class ShellTask extends Task {
       }
     }
 
+    if (this.areDependenciesNewerThanOutputs()) {
+      return true;
+    }
+
     if (this.inputs.length === 0 || this.outputs.length === 0) {
       return true;
     }
@@ -71,7 +75,7 @@ class ShellTask extends Task {
       return true;
     }
 
-    return thl_fs.file.isNewer(this.inputs, this.outputs);
+    return this.isNewerThanOutputs(this.inputs);
   }
 
   public override async run(taskRunnerOptions?: TaskRunner.Options): Promise<void> {

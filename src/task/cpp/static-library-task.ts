@@ -55,7 +55,10 @@ export class StaticLibraryTask extends CppTask {
   }
 
   public override needToRun(): boolean {
-    return !this.prebuilt && (super.needToRun() || thl_fs.file.isNewer(this.inputFiles, this.lib));
+    return (
+      !this.prebuilt &&
+      (super.needToRun() || this.isNewerThanOutputs(this.inputFiles) || this.areDependenciesNewerThanOutputs())
+    );
   }
 
   public override async run(taskRunnerOptions?: thl_task.TaskRunner.Options): Promise<void> {

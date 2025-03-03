@@ -1,8 +1,6 @@
 /*
  * TODO
  *
- * - Generated code
- * - C++ deps generation and parsing
  * - C++ variants
  * - Apt task
  */

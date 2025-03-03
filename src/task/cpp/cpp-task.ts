@@ -3,6 +3,7 @@ import * as thl_process from '../../process';
 import * as thl_task from '..';
 import * as thl_text from '../../text';
 import * as thl_util from '../../util';
+
 import { StaticLibraryTask } from './static-library-task';
 
 export abstract class CppTask extends thl_task.Task {

@@ -12,6 +12,8 @@ class CompileTask extends CppTask {
   public readonly obj: thl_fs.Path;
   public readonly source: thl_fs.Path;
 
+  private readonly cppDeps: thl_fs.Path;
+
   public override get outputs(): thl_fs.Path[] {
     return [this.obj];
   }
@@ -28,17 +30,39 @@ class CompileTask extends CppTask {
       new thl_util.PersistentData(obj.append('.cmd')),
     );
     this.obj = obj;
+    this.cppDeps = this.obj.append('.d');
     this.source = source;
-    this.setCommand(`g++ {{compileFlags}} {{includes}} {{defines}} -c ${source} -o ${obj}`);
+    this.setCommand(`g++ -MMD -MF ${this.cppDeps} {{compileFlags}} {{includes}} {{defines}} -c ${source} -o ${obj}`);
   }
 
   public override needToRun(): boolean {
-    return super.needToRun() || this.isNewerThanOutputs(this.source);
+    const cppDepFilePaths = this.loadCppDeps();
+    return super.needToRun() || this.isNewerThanOutputs([this.source, ...cppDepFilePaths]);
   }
 
   public override async run(taskRunnerOptions?: thl_task.TaskRunner.Options): Promise<void> {
     thl_fs.dir.createForFile(this.obj);
     await super.run(taskRunnerOptions);
+    this.postProcessCppDeps();
+  }
+
+  private loadCppDeps(): thl_fs.Path[] {
+    return this.cppDeps.exists()
+      ? (thl_fs.file.readJson(this.cppDeps) as string[]).map(filename => thl_fs.Path.ensure(filename))
+      : [];
+  }
+
+  private postProcessCppDeps(): void {
+    if (this.cppDeps.exists()) {
+      const deps = thl_fs.file.readText(this.cppDeps).split('\n');
+      const fixedDeps = deps
+        .slice(2)
+        .map(line => line.trim())
+        .filter(line => line)
+        .map(line => (line.endsWith('\\') ? line.slice(0, -1) : line))
+        .map(line => line.trim());
+      thl_fs.file.writeJson(this.cppDeps, fixedDeps);
+    }
   }
 }
 

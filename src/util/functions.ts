@@ -1,4 +1,6 @@
+import * as thl_fs from '../fs';
 import * as thl_log from '../log';
+
 import { ArrayOrSingle } from './types';
 
 export async function asyncTimeout(ms: number): Promise<void> {
@@ -13,6 +15,23 @@ export function combineArrays<T>(arrays: Array<T[] | null | undefined>, options?
   }
 
   return result;
+}
+
+export function determineUserCodePath(): thl_fs.Path {
+  const stack = new Error().stack;
+  const userCodePath = stack
+    ?.split('\n')
+    .map(line => line.trim())
+    .filter(line => line.startsWith('at '))
+    .filter(line => !line.includes('/node_modules/'))
+    .map(line => line.match(/\((.*):\d+:\d+\)/)?.[1])
+    .filter(line => line)[0];
+
+  if (!userCodePath) {
+    throw new Error('Could not determine user code path in:\n' + stack);
+  }
+
+  return thl_fs.Path.ensure(userCodePath);
 }
 
 export function ensureArray<T>(value: ArrayOrSingle<T> | null | undefined): T[] {

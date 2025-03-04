@@ -6,8 +6,8 @@ import { CompileTasklike } from './compile-task';
 import { CppTask } from './cpp-task';
 import { PassedOptions } from './passed-options';
 
-export function link(taskDir: string, options: PassedOptions<LinkTask.Options>): LinkTask {
-  return thl_task.Task.create(taskDir, () => new LinkTask(options));
+export function link(options: PassedOptions<LinkTask.Options>): LinkTask {
+  return thl_task.Task.create(() => new LinkTask(options));
 }
 
 class LinkTask extends CppTask {

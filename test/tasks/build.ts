@@ -13,8 +13,8 @@ import { appx } from './app/x/build';
 import { liba } from './lib/a/build';
 import { libb } from './lib/b/build';
 
-export function test(taskDir: string, options: thl.util.Resolvable<TestTask.Options>): TestTask {
-  return thl.task.Task.create(taskDir, () => new TestTask(options));
+export function test(options: thl.util.Resolvable<TestTask.Options>): TestTask {
+  return thl.task.Task.create(() => new TestTask(options));
 }
 
 class TestTask extends thl.task.Task {
@@ -78,17 +78,17 @@ thl.util.main(async (args: string[]) => {
 });
 
 async function localTest(): Promise<void> {
-  const compileA = test(__dirname, { description: 'Compile A', needToRun: true });
-  const compileB = test(__dirname, { description: 'Compile B', needToRun: true });
-  const compileC = test(__dirname, { description: 'Compile C', needToRun: false });
-  const link = test(__dirname, { description: 'Link', dependencies: [compileA, compileB, compileC] });
-  const package_ = test(__dirname, { description: 'Package', dependencies: [link] });
+  const compileA = test({ description: 'Compile A', needToRun: true });
+  const compileB = test({ description: 'Compile B', needToRun: true });
+  const compileC = test({ description: 'Compile C', needToRun: false });
+  const link = test({ description: 'Link', dependencies: [compileA, compileB, compileC] });
+  const package_ = test({ description: 'Package', dependencies: [link] });
 
   await thl.task.run(package_, { debug: 'brief' });
 }
 
 async function shellTest(): Promise<void> {
-  const genx = thl.task.shell(__dirname, {
+  const genx = thl.task.shell({
     description: 'Gen to xxx',
     output: 'xxx',
     commands: ['echo xxx > {{output}}'],
@@ -97,7 +97,7 @@ async function shellTest(): Promise<void> {
       return output.exists() ? thl.fs.file.readText(output) !== 'xxx\n' : true;
     },
   });
-  const genz = thl.task.shell(__dirname, {
+  const genz = thl.task.shell({
     description: 'Gen to zzz',
     output: 'zzz',
     commands: ['echo zzz > {{output}}'],
@@ -106,7 +106,7 @@ async function shellTest(): Promise<void> {
       return output.exists() ? thl.fs.file.readText(output) !== 'zzz\n' : true;
     },
   });
-  const cat1 = thl.task.shell(__dirname, {
+  const cat1 = thl.task.shell({
     description: 'Cat to ccc',
     inputs: ['aaa', 'bbb', genx, genz],
     output: 'ccc',
@@ -114,7 +114,7 @@ async function shellTest(): Promise<void> {
   });
   // await thl.task.run(cat1, { debug: 'brief' });
 
-  const zip = thl.task.pkg.zip(__dirname, {
+  const zip = thl.task.pkg.zip({
     inputs: [genx, genz, cat1],
     zip: 'shell.zip',
     rootDir: thl.task.BuildDir.buildDir,
@@ -126,7 +126,7 @@ async function shellTest(): Promise<void> {
 async function cppTest(): Promise<void> {
   // await thl.task.run(appx, { debug: 'brief' });
 
-  const zip = thl.task.pkg.zip(__dirname, {
+  const zip = thl.task.pkg.zip({
     inputs: [appx.debug, appx.release, liba.debug, liba.release, libb.debug, libb.release],
     zip: 'cpp.zip',
     rootDir: thl.task.BuildDir.buildDir,

@@ -1,4 +1,4 @@
 export { compile } from './compile-task';
 export { link } from './link-task';
 export { staticLibrary } from './static-library-task';
-export { variant } from './variant';
+export { variants } from './variants';

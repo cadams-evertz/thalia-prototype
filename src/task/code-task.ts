@@ -5,8 +5,8 @@ import { BuildDir } from './build-dir';
 import { Task } from './task';
 import { TaskRunner } from './task-runner';
 
-export function code(taskDir: string, options: thl_util.Resolvable<CodeTask.Options>): CodeTask {
-  return Task.create(taskDir, () => new CodeTask(options));
+export function code(options: thl_util.Resolvable<CodeTask.Options>): CodeTask {
+  return Task.create(() => new CodeTask(options));
 }
 
 class CodeTask extends Task {

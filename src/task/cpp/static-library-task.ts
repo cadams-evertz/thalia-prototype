@@ -6,8 +6,8 @@ import { CompileTasklike } from './compile-task';
 import { CppTask } from './cpp-task';
 import { PassedOptions } from './passed-options';
 
-export function staticLibrary(taskDir: string, options: PassedOptions<StaticLibraryTask.Options>): StaticLibraryTask {
-  return thl_task.Task.create(taskDir, () => new StaticLibraryTask(options));
+export function staticLibrary(options: PassedOptions<StaticLibraryTask.Options>): StaticLibraryTask {
+  return thl_task.Task.create(() => new StaticLibraryTask(options));
 }
 
 export class StaticLibraryTask extends CppTask {

@@ -1,6 +1,6 @@
 import * as thl from 'thalia';
 
-const generatedCode = thl.task.code(__dirname, {
+const generatedCode = thl.task.code({
   description: 'Generating code...',
   output: 'src/generated.cpp',
   needToRun: () => true,
@@ -10,14 +10,9 @@ const generatedCode = thl.task.code(__dirname, {
   },
 });
 
-const options = () => ({
+export const liba = thl.task.cpp.variants.create(thl.task.cpp.staticLibrary, () => ({
   defines: ['LIB_A=1'],
   includeDirs: ['include'],
   inputs: [...thl.fs.file.find('src'), generatedCode],
   lib: 'liba',
-});
-
-export const liba = {
-  debug: thl.task.cpp.staticLibrary(__dirname, [options, thl.task.cpp.variant.debug]),
-  release: thl.task.cpp.staticLibrary(__dirname, [options, thl.task.cpp.variant.release]),
-};
+}));

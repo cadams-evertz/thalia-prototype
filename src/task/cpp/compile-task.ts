@@ -5,8 +5,8 @@ import * as thl_util from '../../util';
 import { CppTask } from './cpp-task';
 import { PassedOptions } from './passed-options';
 
-export function compile(taskDir: string, options: PassedOptions<CompileTask.Options>): CompileTask {
-  return thl_task.Task.create(taskDir, () => new CompileTask(options));
+export function compile(options: PassedOptions<CompileTask.Options>): CompileTask {
+  return thl_task.Task.create(() => new CompileTask(options));
 }
 
 class CompileTask extends CppTask {

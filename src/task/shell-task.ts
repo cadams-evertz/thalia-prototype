@@ -8,8 +8,8 @@ import { FilesProvider, FilesProviderlike } from './files-provider';
 import { Task } from './task';
 import { TaskRunner } from './task-runner';
 
-export function shell(taskDir: string, options: thl_util.Resolvable<ShellTask.Options>): ShellTask {
-  return Task.create(taskDir, () => new ShellTask(options));
+export function shell(options: thl_util.Resolvable<ShellTask.Options>): ShellTask {
+  return Task.create(() => new ShellTask(options));
 }
 
 class ShellTask extends Task {

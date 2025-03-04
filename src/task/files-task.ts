@@ -5,8 +5,8 @@ import { FilesProvider, FilesProviderlike } from './files-provider';
 import { Task } from './task';
 import { TaskRunner } from './task-runner';
 
-export function files(taskDir: string, options: thl_util.Resolvable<FilesTask.Options>): FilesTask {
-  return Task.create(taskDir, () => new FilesTask(options));
+export function files(options: thl_util.Resolvable<FilesTask.Options>): FilesTask {
+  return Task.create(() => new FilesTask(options));
 }
 
 class FilesTask extends Task {

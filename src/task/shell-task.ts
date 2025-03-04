@@ -9,7 +9,7 @@ import { Task } from './task';
 import { TaskRunner } from './task-runner';
 
 export function shell(taskDir: string, options: thl_util.Resolvable<ShellTask.Options>): ShellTask {
-  return Task.create(taskDir, options, options => new ShellTask(options));
+  return Task.create(taskDir, () => new ShellTask(options));
 }
 
 class ShellTask extends Task {
@@ -24,7 +24,8 @@ class ShellTask extends Task {
     return this._outputs;
   }
 
-  constructor(options: ShellTask.Options) {
+  constructor(options: thl_util.Resolvable<ShellTask.Options>) {
+    options = thl_util.Resolvable.resolve(options);
     const inputs = thl_util.ensureArray(options.input ?? options.inputs);
     const outputs = thl_util.ensureArray(options.output ?? options.outputs);
     super({ ...options, dependencies: [...(options.dependencies ?? []), ...Task.filterArray(inputs)] });

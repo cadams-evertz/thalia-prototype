@@ -38,6 +38,25 @@ export async function main(
   }
 }
 
+export function merge<T>(mergeTo: T, ...mixins: Partial<T>[]): T {
+  for (const mixin of mixins) {
+    if (Array.isArray(mergeTo)) {
+      mergeTo = [...mergeTo, ...(mixin as unknown as unknown[])] as T;
+    } else if (typeof mergeTo === 'object') {
+      mergeTo = {
+        ...mergeTo,
+        ...Object.fromEntries(
+          Object.entries(mixin).map(([key, value]) => [key, merge((mergeTo as any)[key], value as Partial<T>)]),
+        ),
+      };
+    } else {
+      mergeTo = mixin as T;
+    }
+  }
+
+  return mergeTo;
+}
+
 export function pushAllIfUnique<T>(array: T[], newItems: T[], equals?: (newItem: T, existingItem: T) => boolean): void {
   for (const newItem of newItems) {
     pushIfUnique(array, newItem, equals);

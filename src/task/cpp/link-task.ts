@@ -4,9 +4,10 @@ import * as thl_util from '../../util';
 
 import { CompileTasklike } from './compile-task';
 import { CppTask } from './cpp-task';
+import { PassedOptions } from './passed-options';
 
-export function link(taskDir: string, options: thl_util.Resolvable<LinkTask.Options>): LinkTask {
-  return thl_task.Task.create(taskDir, options, options => new LinkTask(options));
+export function link(taskDir: string, options: PassedOptions<LinkTask.Options>): LinkTask {
+  return thl_task.Task.create(taskDir, () => new LinkTask(options));
 }
 
 class LinkTask extends CppTask {
@@ -17,10 +18,11 @@ class LinkTask extends CppTask {
     return [this.exe];
   }
 
-  constructor(options: LinkTask.Options) {
+  constructor(options: PassedOptions<LinkTask.Options>) {
+    options = PassedOptions.resolve(options);
     const inputTasks = CompileTasklike.asCompileTaskArray(options.inputs, options);
     const combinedOptions = CppTask.combineOptions(inputTasks);
-    const exe = thl_task.BuildDir.asBuildPath(options.exe);
+    const exe = CppTask.addVariantSuffix(thl_task.BuildDir.asBuildPath(options.exe), options.variantSuffix);
     super(
       {
         ...options,

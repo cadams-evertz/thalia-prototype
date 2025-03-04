@@ -1,8 +1,7 @@
 /*
  * TODO
  *
- * - C++ variants
- * - Apt task
+ * - Apt/brew tasks
  */
 
 import * as thl from 'thalia';
@@ -12,9 +11,10 @@ thl.task.BuildDir.set(thl.fs.dir.getCurrent(), 'build-out');
 
 import { appx } from './app/x/build';
 import { liba } from './lib/a/build';
+import { libb } from './lib/b/build';
 
 export function test(taskDir: string, options: thl.util.Resolvable<TestTask.Options>): TestTask {
-  return thl.task.Task.create(taskDir, options, options => new TestTask(options));
+  return thl.task.Task.create(taskDir, () => new TestTask(options));
 }
 
 class TestTask extends thl.task.Task {
@@ -25,7 +25,8 @@ class TestTask extends thl.task.Task {
     return [];
   }
 
-  constructor(options: TestTask.Options) {
+  constructor(options: thl.util.Resolvable<TestTask.Options>) {
+    options = thl.util.Resolvable.resolve(options);
     super(options);
     this._needToRun = options.needToRun;
     this.dummy = 'dummy';
@@ -126,10 +127,10 @@ async function cppTest(): Promise<void> {
   // await thl.task.run(appx, { debug: 'brief' });
 
   const zip = thl.task.pkg.zip(__dirname, {
-    inputs: [appx, liba],
+    inputs: [appx.debug, appx.release, liba.debug, liba.release, libb.debug, libb.release],
     zip: 'cpp.zip',
     rootDir: thl.task.BuildDir.buildDir,
   });
 
-  await thl.task.run(zip, { debug: 'brief' });
+  await thl.task.run(zip); //, { debug: 'brief' });
 }

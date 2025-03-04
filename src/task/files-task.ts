@@ -6,7 +6,7 @@ import { Task } from './task';
 import { TaskRunner } from './task-runner';
 
 export function files(taskDir: string, options: thl_util.Resolvable<FilesTask.Options>): FilesTask {
-  return Task.create(taskDir, options, options => new FilesTask(options));
+  return Task.create(taskDir, () => new FilesTask(options));
 }
 
 class FilesTask extends Task {
@@ -15,7 +15,8 @@ class FilesTask extends Task {
     return this._outputs;
   }
 
-  constructor(options: FilesTask.Options) {
+  constructor(options: thl_util.Resolvable<FilesTask.Options>) {
+    options = thl_util.Resolvable.resolve(options);
     super(options);
     this._outputs = FilesProvider.toPaths(options.inputs);
   }

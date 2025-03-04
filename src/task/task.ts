@@ -30,12 +30,8 @@ export abstract class Task implements FilesProvider {
     this.description = options.description;
   }
 
-  public static create<TTask, TOptions>(
-    taskDir: string,
-    options: thl_util.Resolvable<TOptions>,
-    taskCreator: (options: TOptions) => TTask,
-  ): TTask {
-    return thl_fs.dir.setCurrentWhile(taskDir, () => taskCreator(thl_util.Resolvable.resolve(options)));
+  public static create<TTask>(taskDir: string, taskCreator: () => TTask): TTask {
+    return thl_fs.dir.setCurrentWhile(taskDir, taskCreator);
   }
 
   public static filterArray(items: (Task | unknown)[]): Task[] {

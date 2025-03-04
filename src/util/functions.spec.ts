@@ -1,6 +1,6 @@
 import 'jasmine';
 
-import { combineArrays, ensureArray, isDefined, pushAllIfUnique, pushIfUnique } from './functions';
+import { combineArrays, ensureArray, isDefined, merge, pushAllIfUnique, pushIfUnique } from './functions';
 
 it('combineArrays', () => {
   expect(combineArrays([])).toEqual([]);
@@ -88,4 +88,25 @@ it('pushIfUnique', () => {
   test(['a'], 'a', undefined).toEqual(['a']);
   test(['b'], 'a', undefined).toEqual(['b', 'a']);
   test(['b'], 'B', (newItem, existingItem) => newItem.toLowerCase() === existingItem.toLowerCase()).toEqual(['b']);
+});
+
+interface MergeTest {
+  n1?: number;
+  n2?: number;
+  a?: number[];
+  inner?: { s1?: string; s2?: string };
+}
+
+it('merge', () => {
+  expect(merge<MergeTest>({ n1: 1 }, { n2: 2 })).toEqual({ n1: 1, n2: 2 });
+  expect(merge<MergeTest>({ n1: 1 }, { n1: 99 })).toEqual({ n1: 99 });
+  expect(merge<MergeTest>({ n1: 1 }, { n1: 99 }, { n2: 2 })).toEqual({ n1: 99, n2: 2 });
+  expect(merge<MergeTest>({ a: [1, 2] }, { a: [3, 4] })).toEqual({ a: [1, 2, 3, 4] });
+  expect(merge<MergeTest>({ inner: { s1: 'a' } }, { inner: { s2: 'b' } })).toEqual({ inner: { s1: 'a', s2: 'b' } });
+  expect(merge<MergeTest>({ n1: 1, a: [1, 2], inner: { s1: 'a' } }, { n2: 2, a: [3, 4], inner: { s2: 'b' } })).toEqual({
+    n1: 1,
+    n2: 2,
+    a: [1, 2, 3, 4],
+    inner: { s1: 'a', s2: 'b' },
+  });
 });

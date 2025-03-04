@@ -29,8 +29,12 @@ export class Path {
   }
 
   public changeExtension(extension: string): Path {
-    const basename = path.basename(this._absolute, path.extname(this._absolute));
-    return this.dirPath().joinWith(basename + extension);
+    return this.dirPath().joinWith(this.stem() + extension);
+  }
+
+  public changeStem(modifier: (stem: string) => string): Path {
+    const extension = this.extension();
+    return this.dirPath().joinWith(modifier(this.stem()) + extension);
   }
 
   public dirPath(): Path {
@@ -52,6 +56,10 @@ export class Path {
 
   public exists(): boolean {
     return fs.existsSync(this._absolute);
+  }
+
+  public extension(): string {
+    return path.extname(this._absolute);
   }
 
   public isDirectory(): boolean {
@@ -115,6 +123,10 @@ export class Path {
 
   public stat(): fs.Stats | undefined {
     return this.exists() ? fs.statSync(this._absolute) : undefined;
+  }
+
+  public stem(): string {
+    return this.basename(this.extension());
   }
 
   public toString(): string {

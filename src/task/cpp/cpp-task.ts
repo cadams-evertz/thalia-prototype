@@ -29,6 +29,10 @@ export abstract class CppTask extends thl_task.Task {
     this.linkFlags = combinedOptions.linkFlags ?? [];
   }
 
+  protected static addVariantSuffix(path: thl_fs.Path, variantSuffix?: string): thl_fs.Path {
+    return variantSuffix ? path.changeStem(stem => `${stem}${variantSuffix}`) : path;
+  }
+
   protected setCommand(template: string): void {
     const subsitutions = {
       compileFlags: this.compileFlags.join(' '),
@@ -77,5 +81,6 @@ export namespace CppTask {
     includeDirs?: thl_fs.Pathlike[];
     libs?: StaticLibraryTask[];
     linkFlags?: string[];
+    variantSuffix?: string;
   }
 }

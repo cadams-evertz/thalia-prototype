@@ -3,9 +3,10 @@ import * as thl_task from '..';
 import * as thl_util from '../../util';
 
 import { CppTask } from './cpp-task';
+import { PassedOptions } from './passed-options';
 
-export function compile(taskDir: string, options: thl_util.Resolvable<CompileTask.Options>): CompileTask {
-  return thl_task.Task.create(taskDir, options, options => new CompileTask(options));
+export function compile(taskDir: string, options: PassedOptions<CompileTask.Options>): CompileTask {
+  return thl_task.Task.create(taskDir, () => new CompileTask(options));
 }
 
 class CompileTask extends CppTask {
@@ -18,9 +19,10 @@ class CompileTask extends CppTask {
     return [this.obj];
   }
 
-  constructor(options: CompileTask.Options) {
+  constructor(options: PassedOptions<CompileTask.Options>) {
+    options = PassedOptions.resolve(options);
     const source = thl_task.FilesProvider.toPath(options.source);
-    const obj = thl_task.BuildDir.asBuildPath(source.append('.o'));
+    const obj = CppTask.addVariantSuffix(thl_task.BuildDir.asBuildPath(source.append('.o')), options.variantSuffix);
     super(
       {
         ...options,

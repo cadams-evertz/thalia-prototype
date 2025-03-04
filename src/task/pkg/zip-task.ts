@@ -5,7 +5,7 @@ import * as thl_task from '..';
 import * as thl_util from '../../util';
 
 export function zip(taskDir: string, options: thl_util.Resolvable<ZipTask.Options>): ZipTask {
-  return thl_task.Task.create(taskDir, options, options => new ZipTask(options));
+  return thl_task.Task.create(taskDir, () => new ZipTask(options));
 }
 
 class ZipTask extends thl_task.Task {
@@ -17,7 +17,8 @@ class ZipTask extends thl_task.Task {
     return [this.zip];
   }
 
-  constructor(options: ZipTask.Options) {
+  constructor(options: thl_util.Resolvable<ZipTask.Options>) {
+    options = thl_util.Resolvable.resolve(options);
     const zip = thl_task.BuildDir.asBuildPath(options.zip);
     super({
       ...options,

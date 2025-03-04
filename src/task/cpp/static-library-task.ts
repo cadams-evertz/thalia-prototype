@@ -4,12 +4,10 @@ import * as thl_util from '../../util';
 
 import { CompileTasklike } from './compile-task';
 import { CppTask } from './cpp-task';
+import { PassedOptions } from './passed-options';
 
-export function staticLibrary(
-  taskDir: string,
-  options: thl_util.Resolvable<StaticLibraryTask.Options>,
-): StaticLibraryTask {
-  return thl_task.Task.create(taskDir, options, options => new StaticLibraryTask(options));
+export function staticLibrary(taskDir: string, options: PassedOptions<StaticLibraryTask.Options>): StaticLibraryTask {
+  return thl_task.Task.create(taskDir, () => new StaticLibraryTask(options));
 }
 
 export class StaticLibraryTask extends CppTask {
@@ -21,7 +19,8 @@ export class StaticLibraryTask extends CppTask {
     return [this.lib];
   }
 
-  constructor(options: StaticLibraryTask.Options) {
+  constructor(options: PassedOptions<StaticLibraryTask.Options>) {
+    options = PassedOptions.resolve(options);
     const inputTasks = CompileTasklike.asCompileTaskArray(options.inputs ?? [], options);
     const combinedOptions = CppTask.combineOptions(inputTasks, options);
     let lib: thl_fs.Path;
@@ -30,7 +29,8 @@ export class StaticLibraryTask extends CppTask {
       lib = thl_fs.Path.ensure(options.lib);
     } else {
       const rawLib = thl_task.BuildDir.asBuildPath(options.lib);
-      lib = rawLib.dirPath().joinWith(`lib${rawLib.basename()}.a`);
+      lib = rawLib.changeStem(stem => `lib${stem}`).changeExtension('.a');
+      lib = CppTask.addVariantSuffix(lib, options.variantSuffix);
     }
 
     super(

@@ -6,7 +6,7 @@ import { Task } from './task';
 import { TaskRunner } from './task-runner';
 
 export function code(taskDir: string, options: thl_util.Resolvable<CodeTask.Options>): CodeTask {
-  return Task.create(taskDir, options, options => new CodeTask(options));
+  return Task.create(taskDir, () => new CodeTask(options));
 }
 
 class CodeTask extends Task {
@@ -18,7 +18,8 @@ class CodeTask extends Task {
     return this._outputs;
   }
 
-  constructor(options: CodeTask.Options) {
+  constructor(options: thl_util.Resolvable<CodeTask.Options>) {
+    options = thl_util.Resolvable.resolve(options);
     const outputs = thl_util.ensureArray(options.output ?? options.outputs);
     super(options);
     this._needToRun = options.needToRun;

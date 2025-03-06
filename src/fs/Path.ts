@@ -54,6 +54,10 @@ export class Path {
     return pathlikes.map(pathlike => Path.ensure(pathlike, relativeTo));
   }
 
+  public equals(that: Pathlike): boolean {
+    return this._absolute === Path.ensure(that).absolute();
+  }
+
   public exists(): boolean {
     return fs.existsSync(this._absolute);
   }
